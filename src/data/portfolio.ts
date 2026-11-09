@@ -54,13 +54,20 @@ export const profile = {
 };
 
 // ── mascot ───────────────────────────────────────────────────
-// Transparent images in public/zebo/. Add more poses here and pick them
-// per project with `pose`.
+// Zebo. `model` is the interactive 3D version used in the hero.
+// `poses` are transparent stills rendered from that model (public/zebo/),
+// picked per project with `pose`. `sticker` is the flat 2D artwork (logo).
 export const mascot = {
   name: "Zebo",
+  model: "zebo/zebo.glb",
+  sticker: "zebo/sticker.webp",
   defaultPose: "wave",
   poses: {
     wave: "zebo/wave.webp",
+    hello: "zebo/hello.webp",
+    cheer: "zebo/cheer.webp",
+    point: "zebo/point.webp",
+    peek: "zebo/peek.webp",
   } as Record<string, string>,
 };
 
@@ -106,6 +113,7 @@ export interface Project {
 export const projects: Project[] = [
   {
     title: "Nusa Coffee",
+    pose: "wave",
     client: "Nusa Coffee Co.",
     year: "2026",
     url: "nusacoffee.example",
@@ -124,6 +132,7 @@ export const projects: Project[] = [
   },
   {
     title: "Kanal Dashboard",
+    pose: "point",
     client: "Kanal Logistics",
     year: "2025",
     url: "app.kanal.example",
@@ -140,6 +149,7 @@ export const projects: Project[] = [
   },
   {
     title: "Ritme Launch Film",
+    pose: "cheer",
     client: "Ritme Audio",
     year: "2026",
     url: "ritme.example/launch",
@@ -156,6 +166,7 @@ export const projects: Project[] = [
   },
   {
     title: "Pulse UI Kit",
+    pose: "hello",
     client: "Personal",
     year: "2025",
     url: "github.com/itsraziqsm/pulse",
@@ -172,6 +183,7 @@ export const projects: Project[] = [
   },
   {
     title: "Batik Configurator",
+    pose: "peek",
     client: "Wastra Studio",
     year: "2026",
     url: "wastra.example/configure",
@@ -189,6 +201,7 @@ export const projects: Project[] = [
   },
   {
     title: "Isometric City",
+    pose: "cheer",
     client: "Personal",
     year: "2025",
     url: "city.raziqsm.example",
@@ -205,6 +218,7 @@ export const projects: Project[] = [
   },
   {
     title: "Lumbung Identity",
+    pose: "point",
     client: "Lumbung Fintech",
     year: "2024",
     url: "lumbung.example",
@@ -221,6 +235,7 @@ export const projects: Project[] = [
   },
   {
     title: "Senja Festival",
+    pose: "hello",
     client: "Senja Music Fest",
     year: "2024",
     url: "senjafest.example",

@@ -190,7 +190,28 @@ function initReveals() {
   });
 }
 
+/** Lazy-load three.js and mount the interactive 3D Zebo in the hero. */
+function initZebo() {
+  const el = document.getElementById("zebo-3d");
+  if (!el?.dataset.src) return;
+  const gl = document.createElement("canvas").getContext("webgl2");
+  if (!gl) return; // keep the still image
+  const io = new IntersectionObserver(async ([e]) => {
+    if (!e.isIntersecting) return;
+    io.disconnect();
+    const { mountZebo } = await import("./zebo3d");
+    mountZebo(el, {
+      src: el.dataset.src!,
+      pose: "wave",
+      yaw: -0.15,
+      onReady: () => el.querySelector<HTMLElement>(".zebo-still")?.classList.add("opacity-0"),
+    });
+  }, { rootMargin: "200px" });
+  io.observe(el);
+}
+
 export function initPage() {
+  initZebo();
   initCopy();
   initLangLinks();
   initWork();

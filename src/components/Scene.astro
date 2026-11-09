@@ -14,15 +14,15 @@ interface Props {
   seed?: number;
   /** mascot pose key from `mascot.poses`, or false to hide */
   pose?: string | false;
-  /** mascot width in % of the scene */
+  /** mascot height in % of the scene */
   mascotSize?: number;
 }
 
 const { prop, tint, color, chip, compact = false, image, seed = 0, pose = mascot.defaultPose, mascotSize } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const poseSrc = pose ? `${base}/${mascot.poses[pose] ?? mascot.poses[mascot.defaultPose]}` : null;
-const mSize = mascotSize ?? (compact ? 44 : 34);
-const mTilt = ((seed * 37) % 13) - 6;
+const mSize = mascotSize ?? (compact ? 82 : 86);
+const mTilt = ((seed * 37) % 7) - 3;
 
 const orbColors = ["#f4a68a", "#b9b0f5", "#9fd8bd", "#ffffff", "#f6c9a0"];
 const rand = (n: number) => {
@@ -230,8 +230,8 @@ const c = color;
           <img
             src={poseSrc}
             alt=""
-            class="zebo bob absolute bottom-[6%] left-[3%]"
-            style={`width:${mSize}%;rotate:${mTilt}deg`}
+            class="zebo bob absolute bottom-[2%] left-[4%] w-auto"
+            style={`height:${mSize}%;rotate:${mTilt}deg`}
             loading="lazy"
             decoding="async"
           />

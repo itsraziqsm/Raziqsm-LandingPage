@@ -7,5 +7,9 @@ export default defineConfig({
   site: "https://itsraziqsm.github.io",
   base: "/Raziqsm-LandingPage",
   devToolbar: { enabled: false },
-  vite: { plugins: [tailwindcss()] },
+  vite: {
+    plugins: [tailwindcss()],
+    // three.js is lazy-loaded in its own chunk for the hero Zebo
+    build: { chunkSizeWarningLimit: 700 },
+  },
 });

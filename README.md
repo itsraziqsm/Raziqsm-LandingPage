@@ -2,7 +2,7 @@
 
 Bilingual (EN / ID) portfolio landing page with a scroll-driven project card stack, based on the "12 skills, one 3D studio" motion reference.
 
-**Stack:** Astro 7 · Tailwind CSS v4 · GSAP + ScrollTrigger · Instrument Serif / Inter Tight / JetBrains Mono
+**Stack:** Astro 7 · Tailwind CSS v4 · GSAP + ScrollTrigger · three.js · Instrument Serif / Inter Tight / JetBrains Mono
 
 ## Run locally
 
@@ -21,6 +21,13 @@ Open http://localhost:4321/Raziqsm-LandingPage/ (English) or http://localhost:43
 - **Placeholder illustrations:** `src/components/Scene.astro`. Pass `image` to use a real render instead.
 - **Project card:** `src/components/ProjectCard.astro`
 - **Scroll / card-stack animation:** `src/scripts/showcase.ts`
+
+## Zebo (mascot)
+
+- `public/zebo/zebo.glb`: 3D model (meshopt-compressed), shown interactively in the hero. The head follows the cursor, the arm waves, and Zebo hops when clicked. Code: `src/scripts/zebo3d.ts`. three.js is lazy-loaded only for this.
+- `public/zebo/{wave,hello,cheer,point,peek}.webp`: transparent stills rendered from the model, picked per project with `pose` in `src/data/portfolio.ts`.
+- `public/zebo/sticker.webp`: flat 2D artwork used for the logo and favicon.
+- New poses are offsets per node (head, ears, arms, tail) in `POSES` inside `zebo3d.ts`.
 
 ## Deploy (GitHub Pages)
 
