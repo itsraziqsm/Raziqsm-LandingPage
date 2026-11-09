@@ -1,11 +1,11 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { categories, skills } from "../data/skills";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const D = (s: number) => (reduced ? 0 : s);
 
 /** Where a card sits relative to the active one (d = index - active). */
 function pose(d: number) {
@@ -27,20 +27,34 @@ function toast(msg: string) {
   toastTimer = window.setTimeout(() => el.classList.add("opacity-0", "translate-y-2"), 1800);
 }
 
-async function copy(text: string, msg: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast(msg);
-  } catch {
-    toast("copy failed — select the text manually");
-  }
+function initCopy() {
+  document.querySelectorAll<HTMLElement>("[data-copy]").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy ?? "");
+        toast(btn.dataset.toast ?? "copied ✓");
+      } catch {
+        toast("✕");
+      }
+    }),
+  );
 }
 
-export function initShowcase() {
-  const section = document.getElementById("showcase")!;
+/** Keep the #hash when switching language. */
+function initLangLinks() {
+  document.querySelectorAll<HTMLAnchorElement>("[data-lang-link]").forEach((a) =>
+    a.addEventListener("click", () => {
+      if (location.hash) a.href = a.href.split("#")[0] + location.hash;
+    }),
+  );
+}
+
+function initWork() {
+  const section = document.getElementById("work");
+  if (!section) return;
   const stage = document.getElementById("stage")!;
   const wrap = document.getElementById("stage-wrap")!;
-  const cards = gsap.utils.toArray<HTMLElement>(".skill-card");
+  const cards = gsap.utils.toArray<HTMLElement>(".work-card");
   const segs = gsap.utils.toArray<HTMLElement>(".seg");
   const counter = document.getElementById("counter")!;
   const catLabel = document.getElementById("cat-label")!;
@@ -49,39 +63,31 @@ export function initShowcase() {
   const hint = document.getElementById("scroll-hint")!;
   const total = cards.length;
 
-  // --- copy handlers -------------------------------------------------------
-  document.querySelectorAll<HTMLButtonElement>(".terminal").forEach((btn) =>
-    btn.addEventListener("click", () => copy(btn.dataset.command ?? "", "command copied ✓")),
-  );
-  document.getElementById("cta")?.addEventListener("click", () =>
-    copy(skills.map((s) => `# ${s.name}\n${s.command}`).join("\n\n"), `${skills.length} install commands copied ✓`),
-  );
-
-  // --- fit the card stack into the viewport --------------------------------
+  // fit the card stack into the viewport
   const fit = () => {
     const h = Math.max(...cards.map((c) => c.offsetHeight));
-    const scale = Math.min(1, wrap.clientHeight / h);
-    gsap.set(stage, { scale, height: h });
+    gsap.set(stage, { scale: Math.min(1, wrap.clientHeight / h), height: h });
   };
   fit();
   window.addEventListener("resize", fit);
 
-  // --- terminal typing ------------------------------------------------------
+  // terminal typing
   let typing: gsap.core.Tween | null = null;
+  const parts = (card: HTMLElement) => ({
+    cmd: card.querySelector<HTMLElement>(".cmd")!,
+    done: card.querySelector<HTMLElement>(".done")!,
+    full: card.querySelector<HTMLElement>(".terminal")!.dataset.command ?? "",
+  });
   const termState = (card: HTMLElement, state: "empty" | "full") => {
-    const cmd = card.querySelector<HTMLElement>(".cmd")!;
-    const done = card.querySelector<HTMLElement>(".done")!;
-    const full = card.querySelector<HTMLElement>(".terminal")!.dataset.command ?? "";
+    const { cmd, done, full } = parts(card);
     cmd.textContent = state === "full" ? full : "";
     cmd.classList.remove("caret");
     done.style.visibility = state === "full" ? "visible" : "hidden";
   };
   const typeInto = (card: HTMLElement) => {
     typing?.progress(1).kill();
-    const cmd = card.querySelector<HTMLElement>(".cmd")!;
-    const done = card.querySelector<HTMLElement>(".done")!;
-    const full = card.querySelector<HTMLElement>(".terminal")!.dataset.command ?? "";
     if (reduced) return termState(card, "full");
+    const { cmd, done, full } = parts(card);
     const o = { n: 0 };
     cmd.textContent = "";
     cmd.classList.add("caret");
@@ -99,47 +105,35 @@ export function initShowcase() {
     });
   };
 
-  // --- state ----------------------------------------------------------------
   let active = -1;
-  let activeCat = skills[0].category;
+  let activeCat = cards[0].dataset.catIndex;
 
-  const setCategory = (i: number) => {
-    const cat = skills[i].category;
-    if (cat === activeCat) return;
-    activeCat = cat;
-    const c = categories.find((x) => x.id === cat)!;
-    const ci = categories.indexOf(c);
-    const dir = i > active ? 1 : -1;
+  const setCategory = (i: number, dir: number) => {
+    const card = cards[i];
+    if (card.dataset.catIndex === activeCat) return;
+    activeCat = card.dataset.catIndex;
     gsap
       .timeline()
-      .to(catName, { yPercent: -110 * dir, duration: reduced ? 0 : 0.22, ease: "power2.in" })
+      .to(catName, { yPercent: -110 * dir, duration: D(0.22), ease: "power2.in" })
       .add(() => {
-        catName.textContent = c.label;
-        catNum.textContent = pad(ci + 1);
-        catLabel.style.setProperty("--cat", c.color);
+        catName.textContent = card.dataset.catLabel ?? "";
+        catNum.textContent = pad(Number(card.dataset.catIndex) + 1);
+        catLabel.style.setProperty("--cat", card.dataset.catColor ?? "");
       })
-      .fromTo(catName, { yPercent: 110 * dir }, { yPercent: 0, duration: reduced ? 0 : 0.35, ease: "power3.out" });
+      .fromTo(catName, { yPercent: 110 * dir }, { yPercent: 0, duration: D(0.35), ease: "power3.out" });
   };
 
   const go = (i: number, instant = false) => {
     if (i === active) return;
-    setCategory(i);
+    setCategory(i, i > active ? 1 : -1);
     active = i;
     counter.textContent = pad(i + 1);
-
     cards.forEach((card, k) => {
-      gsap.to(card, {
-        ...pose(k - i),
-        duration: instant || reduced ? 0 : 0.75,
-        ease: "power3.inOut",
-        overwrite: "auto",
-      });
+      gsap.to(card, { ...pose(k - i), duration: instant ? 0 : D(0.75), ease: "power3.inOut", overwrite: "auto" });
       if (k < i) termState(card, "full");
       else if (k > i) termState(card, "empty");
     });
-    segs.forEach((s, k) =>
-      gsap.to(s, { scaleX: k <= i ? 1 : 0, duration: instant || reduced ? 0 : 0.4, ease: "power2.out" }),
-    );
+    segs.forEach((s, k) => gsap.to(s, { scaleX: k <= i ? 1 : 0, duration: instant ? 0 : D(0.4), ease: "power2.out" }));
     typeInto(cards[i]);
     gsap.to(hint, { autoAlpha: i === 0 ? 1 : 0, duration: 0.3 });
   };
@@ -155,23 +149,50 @@ export function initShowcase() {
     onUpdate: (self) => go(Math.round(self.progress * (total - 1))),
     invalidateOnRefresh: true,
   });
+}
 
-  // --- finale reveal ----------------------------------------------------------
-  if (!reduced) {
-    gsap.from("#finale h2", {
-      y: 40,
+function initReveals() {
+  const cta = document.getElementById("sticky-cta");
+  if (cta) {
+    const show = (on: boolean) => {
+      cta.classList.toggle("opacity-0", !on);
+      cta.classList.toggle("translate-y-24", !on);
+    };
+    ScrollTrigger.create({
+      trigger: "#all",
+      start: "top 60%",
+      endTrigger: "#contact",
+      end: "top 90%",
+      onToggle: (self) => show(self.isActive),
+    });
+  }
+
+  if (reduced) return;
+
+  gsap.from(".hero-in", { y: 30, autoAlpha: 0, duration: 0.9, stagger: 0.12, ease: "power3.out" });
+
+  gsap.utils.toArray<HTMLElement>(".reveal").forEach((el) =>
+    gsap.from(el, {
+      y: 30,
       autoAlpha: 0,
       duration: 0.8,
       ease: "power3.out",
-      scrollTrigger: { trigger: "#finale", start: "top 75%" },
-    });
-    gsap.from(".grid-card", {
-      y: 24,
-      autoAlpha: 0,
-      duration: 0.6,
-      stagger: 0.05,
-      ease: "power3.out",
-      scrollTrigger: { trigger: "#finale ul", start: "top 85%" },
-    });
-  }
+      scrollTrigger: { trigger: el, start: "top 88%" },
+    }),
+  );
+  gsap.from(".grid-card", {
+    y: 24,
+    autoAlpha: 0,
+    duration: 0.6,
+    stagger: 0.05,
+    ease: "power3.out",
+    scrollTrigger: { trigger: "#all ul", start: "top 85%" },
+  });
+}
+
+export function initPage() {
+  initCopy();
+  initLangLinks();
+  initWork();
+  initReveals();
 }

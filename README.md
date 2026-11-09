@@ -1,6 +1,6 @@
-# raziqsm · skills
+# raziqsm · portfolio
 
-Scroll-driven landing page that turns the "12 skills, one 3D studio" motion piece into a website.
+Bilingual (EN / ID) portfolio landing page with a scroll-driven project card stack, based on the "12 skills, one 3D studio" motion reference.
 
 **Stack:** Astro 7 · Tailwind CSS v4 · GSAP + ScrollTrigger · Instrument Serif / Inter Tight / JetBrains Mono
 
@@ -11,13 +11,15 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:4321/Raziqsm-LandingPage/
+Open http://localhost:4321/Raziqsm-LandingPage/ (English) or http://localhost:4321/Raziqsm-LandingPage/id/ (Indonesian)
 
 ## Edit content
 
-- **Skills, categories, colors:** `src/data/skills.ts`
+- **All content (profile, projects, experience, toolkit, contact):** `src/data/portfolio.ts` — every text field takes `{ en, id }`
+- **UI labels (buttons, headings) in both languages:** `src/i18n.ts`
+- **Page layout / sections:** `src/layouts/Page.astro` (English at `/`, Indonesian at `/id/`)
 - **Placeholder illustrations:** `src/components/Scene.astro`. Pass `image` to use a real render instead.
-- **Card layout:** `src/components/SkillCard.astro`
+- **Project card:** `src/components/ProjectCard.astro`
 - **Scroll / card-stack animation:** `src/scripts/showcase.ts`
 
 ## Deploy (GitHub Pages)
