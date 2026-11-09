@@ -1,0 +1,243 @@
+---
+// Placeholder "clay 3D" illustration: CSS orbs + mascot + an SVG prop per skill.
+// Swap for real renders later by passing `image`.
+import type { Prop } from "../data/skills";
+
+interface Props {
+  prop: Prop;
+  tint: string;
+  color: string;
+  chip?: string;
+  compact?: boolean;
+  image?: string;
+  seed?: number;
+}
+
+const { prop, tint, color, chip, compact = false, image, seed = 0 } = Astro.props;
+
+const orbColors = ["#f4a68a", "#b9b0f5", "#9fd8bd", "#ffffff", "#f6c9a0"];
+const rand = (n: number) => {
+  const x = Math.sin(seed * 97.13 + n * 13.7) * 10000;
+  return x - Math.floor(x);
+};
+const orbs = Array.from({ length: compact ? 2 : 5 }, (_, i) => ({
+  left: 8 + rand(i) * 80,
+  top: 6 + rand(i + 10) * 40,
+  size: 4 + rand(i + 20) * 5,
+  color: orbColors[(i + seed) % orbColors.length],
+}));
+const specks = compact
+  ? []
+  : Array.from({ length: 14 }, (_, i) => ({ left: rand(i + 40) * 100, top: rand(i + 60) * 60 }));
+
+const c = color;
+---
+
+<div class="scene relative h-full w-full overflow-hidden" style={`--tint:${tint}`}>
+  {
+    image ? (
+      <img src={image} alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+    ) : (
+      <>
+        {specks.map((s) => (
+          <span class="speck" style={`left:${s.left}%;top:${s.top}%`} />
+        ))}
+        {orbs.map((o, i) => (
+          <span
+            class:list={["orb", i % 2 ? "bob-slow" : "bob"]}
+            style={`left:${o.left}%;top:${o.top}%;width:${o.size}%;aspect-ratio:1;--orb:${o.color}`}
+          />
+        ))}
+
+        <svg
+          class="prop-clay absolute left-[34%] top-[14%] h-[78%] w-[60%]"
+          viewBox="0 0 200 140"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id={`g${seed}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color={c} stop-opacity=".95" />
+              <stop offset="1" stop-color={c} stop-opacity=".7" />
+            </linearGradient>
+          </defs>
+          {prop === "monitor" && (
+            <g>
+              <rect x="45" y="10" width="110" height="74" rx="6" fill="#2a2523" />
+              <rect x="51" y="16" width="98" height="62" rx="3" fill="#3c3f8f" />
+              <path d="M92 36 L112 47 L92 58 Z" fill="#fff" />
+              <rect x="58" y="68" width="84" height="3" rx="1.5" fill="#6b6fb8" />
+              <rect x="58" y="68" width="28" height="3" rx="1.5" fill={c} />
+              <rect x="97" y="84" width="6" height="34" fill="#2a2523" />
+              <ellipse cx="100" cy="122" rx="30" ry="6" fill="#2a2523" />
+            </g>
+          )}
+          {prop === "filmstrip" && (
+            <g transform="rotate(-8 100 60)">
+              <rect x="0" y="28" width="200" height="50" rx="4" fill="#2a2523" />
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <rect
+                  x={8 + i * 32}
+                  y="36"
+                  width="26"
+                  height="34"
+                  rx="2"
+                  fill={["#f4a68a", "#9fd8bd", "#b9b0f5", "#f6c9a0", "#8fc7e8", "#f4a68a"][i]}
+                />
+              ))}
+              {Array.from({ length: 20 }).map((_, i) => (
+                <rect x={4 + i * 10} y="30" width="5" height="3" fill="#fff" opacity=".8" />
+              ))}
+              {Array.from({ length: 20 }).map((_, i) => (
+                <rect x={4 + i * 10} y="73" width="5" height="3" fill="#fff" opacity=".8" />
+              ))}
+            </g>
+          )}
+          {prop === "boards" && (
+            <g>
+              {["#f4a68a", "#b9b0f5", "#9fd8bd"].map((f, i) => (
+                <g>
+                  <rect x={30 + i * 48} y="22" width="44" height="40" rx="2" fill="#2a2523" />
+                  <rect x={33 + i * 48} y="25" width="38" height="34" fill={f} />
+                  <rect x={50 + i * 48} y="62" width="3" height="54" fill="#2a2523" />
+                </g>
+              ))}
+            </g>
+          )}
+          {prop === "curve" && (
+            <g>
+              <path d="M20 110 C 60 110, 70 20, 120 20 S 170 60, 185 40" stroke="#fff" stroke-width="3" />
+              <circle cx="120" cy="20" r="6" fill={c} />
+              {[0, 1, 2, 3].map((i) => (
+                <rect x={20 + i * 6} y={112 + i * 6} width="170" height="4" rx="2" fill={["#2a2523", c, "#9fd8bd", "#f4a68a"][i]} />
+              ))}
+            </g>
+          )}
+          {prop === "camera" && (
+            <g>
+              <ellipse cx="135" cy="58" rx="34" ry="34" stroke="#fff" stroke-width="5" />
+              <rect x="55" y="40" width="36" height="22" rx="4" fill="#2a2523" />
+              <rect x="88" y="45" width="12" height="12" rx="2" fill="#2a2523" />
+              <path d="M73 62 L58 118 M73 62 L73 120 M73 62 L88 118" stroke="#2a2523" stroke-width="3" />
+              <ellipse cx="135" cy="112" rx="28" ry="7" fill="#2a2523" />
+              <rect x="128" y="74" width="14" height="36" rx="4" fill="#f6c9a0" />
+            </g>
+          )}
+          {prop === "burst" && (
+            <g>
+              {Array.from({ length: 12 }).map((_, i) => {
+                const a = (i / 12) * Math.PI * 2;
+                return (
+                  <line
+                    x1="100"
+                    y1="66"
+                    x2={100 + Math.cos(a) * 95}
+                    y2={66 + Math.sin(a) * 70}
+                    stroke={c}
+                    stroke-opacity=".55"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                );
+              })}
+              <rect x="72" y="58" width="56" height="14" rx="5" fill="#2a2523" />
+            </g>
+          )}
+          {prop === "turntable" && (
+            <g>
+              <ellipse cx="110" cy="112" rx="50" ry="12" fill="#2a2523" />
+              <ellipse cx="110" cy="106" rx="50" ry="12" fill="#f7f4f0" />
+              <circle cx="110" cy="62" r="20" fill={`url(#g${seed})`} />
+              <circle cx="88" cy="58" r="9" fill={c} />
+              <circle cx="132" cy="58" r="9" fill={c} />
+              <rect x="108" y="80" width="4" height="22" fill={c} />
+            </g>
+          )}
+          {prop === "trees" && (
+            <g>
+              {[0, 1, 2].map((i) => (
+                <g>
+                  <rect x={28 + i * 56} y="80" width="40" height="34" rx="4" fill="#f7f4f0" />
+                  <rect x={45 + i * 56} y="60" width="6" height="22" fill="#9b8b80" />
+                  <ellipse cx={48 + i * 56} cy="52" rx={14 + i * 3} ry="14" fill={i === 2 ? c : "#c9c4be"} />
+                </g>
+              ))}
+            </g>
+          )}
+          {prop === "canvas" && (
+            <g>
+              <rect x="40" y="18" width="130" height="64" rx="4" fill="#f7f4f0" />
+              <circle cx="72" cy="50" r="14" fill="#f4a68a" />
+              <path d="M100 70 L120 34 L140 70 Z" fill="#f6c9a0" />
+              <circle cx="152" cy="42" r="9" fill="#b9b0f5" />
+              <circle cx="78" cy="56" r="16" stroke="#2a2523" stroke-width="5" />
+              <path d="M90 68 L104 84" stroke="#2a2523" stroke-width="5" />
+              {[70, 105, 140].map((x) => (
+                <rect x={x} y="82" width="4" height="38" fill="#2a2523" />
+              ))}
+            </g>
+          )}
+          {prop === "blocks" && (
+            <g>
+              <path d="M30 110 L70 40 L110 110 Z" fill={c} opacity=".5" />
+              <rect x="20" y="96" width="50" height="22" rx="4" fill="#f6c9a0" />
+              <rect x="80" y="88" width="50" height="30" rx="4" fill="#9fd8bd" />
+              <rect x="140" y="98" width="44" height="20" rx="4" fill="#b9b0f5" />
+            </g>
+          )}
+          {prop === "layers" && (
+            <g>
+              {[0, 1, 2, 3].map((i) => (
+                <path
+                  d={`M60 ${84 - i * 16} L110 ${70 - i * 16} L160 ${84 - i * 16} L110 ${98 - i * 16} Z`}
+                  fill={["#2a2523", "#9fd8bd", "#2a2523", c][i]}
+                  opacity={i === 3 ? 0.9 : 1}
+                />
+              ))}
+              {[0, 1, 2].map((i) => (
+                <line x1="160" y1={70 - i * 16} x2="185" y2={64 - i * 16} stroke="#2a2523" stroke-width="1" />
+              ))}
+            </g>
+          )}
+          {prop === "grid" && (
+            <g>
+              {Array.from({ length: 6 }).map((_, r) =>
+                Array.from({ length: 12 }).map((_, k) => (
+                  <rect
+                    x={k * 16 + 4 + r * 2}
+                    y={60 + r * 12 - Math.abs(Math.sin((k + r) / 2)) * 6}
+                    width="13"
+                    height="12"
+                    rx="3"
+                    fill={["#f4a68a", "#f6c9a0", "#9fd8bd", "#8fc7e8", "#b9b0f5"][(k + r) % 5]}
+                  />
+                ))
+              )}
+            </g>
+          )}
+        </svg>
+
+        <div class="mascot bob left-[6%] bottom-[12%]">
+          <span class="blush" />
+          <span class="feet">
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
+
+        {chip && !compact && (
+          <span class="absolute left-[4%] top-[8%] -rotate-3 rounded-md bg-ink px-2.5 py-1.5 font-mono text-[11px] font-semibold text-white shadow-lg sm:text-xs">
+            {chip.startsWith("new ") ? (
+              <>
+                new <span style={`color:${c}`}>{chip.slice(4)}</span>
+              </>
+            ) : (
+              chip
+            )}
+          </span>
+        )}
+      </>
+    )
+  }
+</div>

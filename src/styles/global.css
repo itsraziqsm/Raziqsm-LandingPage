@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme {
+  --font-sans: "Inter Tight Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-paper: #f3ece4;
+  --color-ink: #141110;
+  --color-muted: #7d746c;
+  --color-brand: #f26b2c;
+  --color-term: #1a1514;
+}
+
+:root {
+  --cat: var(--color-brand);
+  color-scheme: light;
+}
+
+html {
+  background: var(--color-paper);
+}
+
+body {
+  background-color: var(--color-paper);
+  /* faint horizontal grain like the reference */
+  background-image:
+    radial-gradient(60% 50% at 100% 100%, rgb(255 190 160 / 0.45), transparent 70%),
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.018) 0 1px, transparent 1px 3px);
+  background-attachment: fixed;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- scene placeholder (clay look) ---------- */
+.scene {
+  background:
+    radial-gradient(120% 70% at 50% 110%, rgb(255 255 255 / 0.85), transparent 60%),
+    linear-gradient(180deg, var(--tint) 0%, color-mix(in oklab, var(--tint), white 45%) 100%);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 32% 30%, white 0 8%, var(--orb) 45%, color-mix(in oklab, var(--orb), black 25%) 100%);
+  box-shadow: 0 10px 20px -8px rgb(0 0 0 / 0.25);
+}
+
+.speck {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: white;
+  opacity: 0.8;
+}
+
+/* raziqsm mascot: a soft clay blob */
+.mascot {
+  position: absolute;
+  width: 26%;
+  aspect-ratio: 1.15;
+  border-radius: 38% 38% 30% 30% / 44% 44% 34% 34%;
+  background: radial-gradient(circle at 35% 28%, #ffb999 0%, #f08a62 45%, #c95b39 100%);
+  box-shadow:
+    inset -8px -10px 18px rgb(120 40 10 / 0.35),
+    inset 6px 8px 14px rgb(255 230 210 / 0.6),
+    0 22px 30px -14px rgb(90 30 10 / 0.45);
+}
+.mascot::before,
+.mascot::after {
+  content: "";
+  position: absolute;
+  top: 34%;
+  width: 11%;
+  height: 26%;
+  border-radius: 40%;
+  background: #1a1210;
+  box-shadow: inset 2px 3px 0 0 rgb(255 255 255 / 0.85);
+}
+.mascot::before { left: 30%; }
+.mascot::after { right: 30%; }
+.mascot .feet {
+  position: absolute;
+  bottom: -9%;
+  left: 18%;
+  right: 18%;
+  height: 16%;
+  display: flex;
+  justify-content: space-between;
+}
+.mascot .feet i {
+  width: 16%;
+  height: 100%;
+  border-radius: 0 0 40% 40%;
+  background: #c95b39;
+}
+.mascot .blush {
+  position: absolute;
+  top: 60%;
+  left: 45%;
+  width: 10%;
+  height: 8%;
+  border-radius: 50%;
+  background: #1a1210;
+}
+
+.prop-clay {
+  filter: drop-shadow(0 14px 14px rgb(0 0 0 / 0.18));
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.bob { animation: bob 3.2s ease-in-out infinite; }
+.bob-slow { animation: bob 4.6s ease-in-out infinite; }
+
+/* ---------- terminal ---------- */
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: currentColor;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bob, .bob-slow, .caret::after { animation: none; }
+}
