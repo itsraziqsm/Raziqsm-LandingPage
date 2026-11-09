@@ -53,6 +53,17 @@ export const profile = {
   ],
 };
 
+// ── mascot ───────────────────────────────────────────────────
+// Transparent images in public/zebo/. Add more poses here and pick them
+// per project with `pose`.
+export const mascot = {
+  name: "Zebo",
+  defaultPose: "wave",
+  poses: {
+    wave: "zebo/wave.webp",
+  } as Record<string, string>,
+};
+
 // ── work categories ──────────────────────────────────────────
 export type CategoryId = "web" | "motion" | "3d" | "brand";
 
@@ -87,6 +98,7 @@ export interface Project {
   result: L;
   prop: Prop; // placeholder illustration
   image?: string; // real screenshot, e.g. "/Raziqsm-LandingPage/work/nusa.jpg"
+  pose?: string; // Zebo pose key (see `mascot.poses`)
   badge?: L;
   chip?: string;
 }

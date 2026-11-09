@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import type { Lang } from "../data/portfolio";
-import { profile, projects, categories, categoryOf, experience, tools, aiSkills } from "../data/portfolio";
+import { mascot, profile, projects, categories, categoryOf, experience, tools, aiSkills } from "../data/portfolio";
 import { t, ui, accent } from "../i18n";
 import ProjectCard from "../components/ProjectCard.astro";
 import Scene from "../components/Scene.astro";
@@ -31,7 +31,8 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
     <meta name="theme-color" content="#f3ece4" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={desc} />
-    <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <link rel="icon" type="image/png" href={`${base}/favicon.png`} />
+    <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
     <link rel="alternate" hreflang="en" href={new URL(home.en, Astro.site)} />
     <link rel="alternate" hreflang="id" href={new URL(home.id, Astro.site)} />
   </head>
@@ -39,13 +40,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
     <!-- ───────── header ───────── -->
     <header class="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 bg-linear-to-b from-paper via-paper/85 to-transparent px-4 pt-4 pb-6 sm:px-8 sm:pt-5 sm:pb-8">
       <a href={home[lang]} class="flex items-center gap-2 text-[13px] sm:text-sm">
-        <span class="grid size-7 place-items-center rounded-lg bg-brand shadow-sm">
-          <svg viewBox="0 0 20 14" class="w-4" aria-hidden="true">
-            <rect width="20" height="14" rx="4" fill="#fff"></rect>
-            <rect x="5" y="4" width="2.5" height="5" rx="1" fill="#141110"></rect>
-            <rect x="12.5" y="4" width="2.5" height="5" rx="1" fill="#141110"></rect>
-          </svg>
-        </span>
+        <img src={`${base}/${mascot.poses[mascot.defaultPose]}`} alt={mascot.name} class="zebo h-8 w-auto -rotate-6 sm:h-9" />
         <span class="font-bold tracking-tight">{profile.handle}</span>
         <span class="hidden text-muted sm:inline">· {t(profile.role, lang).toLowerCase()}</span>
       </a>
@@ -123,7 +118,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
                 <span class="font-semibold text-ink">{profile.handle}</span>.com
               </span>
             </div>
-            <div class="aspect-[5/4]"><Scene prop="burst" tint="#f6d9c8" color="#f26b2c" seed={42} chip={`hi, I'm ${profile.name.toLowerCase()}`} /></div>
+            <div class="aspect-[5/4]"><Scene prop="burst" tint="#f6d9c8" color="#f26b2c" seed={42} mascotSize={52} chip={`hi, I'm ${profile.name.toLowerCase()}`} /></div>
           </div>
           <div class="absolute -bottom-6 -left-2 -rotate-3 rounded-xl bg-term px-4 py-3 font-mono text-[11px] text-white shadow-xl sm:-left-8 sm:text-xs">
             <span class="text-brand">›</span> whoami<br />
@@ -184,7 +179,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
                     class="flex h-full flex-col gap-2 rounded-2xl bg-white p-2 shadow-[0_10px_30px_-18px_rgb(60_30_10/0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-18px_rgb(60_30_10/0.45)] sm:flex-row sm:items-center sm:gap-3 sm:p-2.5"
                   >
                     <span class="block aspect-[4/3] w-full shrink-0 overflow-hidden rounded-xl sm:w-[42%]">
-                      <Scene prop={p.prop} tint={c.tint} color={c.color} compact seed={i} image={p.image} />
+                      <Scene prop={p.prop} tint={c.tint} color={c.color} compact seed={i} image={p.image} pose={p.pose} />
                     </span>
                     <span class="min-w-0 px-1 pb-1 sm:p-0">
                       <span class="block font-mono text-[10px] font-bold tracking-[0.15em] uppercase" style={`color:${c.color}`}>
@@ -205,7 +200,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
       <section id="about" class="mx-auto grid max-w-[1100px] gap-10 px-4 py-24 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div class="reveal">
           <div class="-rotate-2 overflow-hidden rounded-2xl bg-white p-2 shadow-[0_30px_60px_-25px_rgb(60_30_10/0.35)]">
-            <div class="aspect-square overflow-hidden rounded-xl"><Scene prop="canvas" tint="#dcd8f6" color="#7559f2" seed={7} /></div>
+            <div class="aspect-square overflow-hidden rounded-xl"><Scene prop="canvas" tint="#dcd8f6" color="#7559f2" seed={7} mascotSize={58} /></div>
             <div class="flex items-end justify-between gap-2 px-2 pt-3 pb-1">
               <div>
                 <p class="text-2xl font-extrabold tracking-[-0.03em]">{profile.name}</p>
