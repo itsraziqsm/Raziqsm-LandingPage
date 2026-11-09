@@ -245,7 +245,40 @@ function initZebo() {
   io.observe(el);
 }
 
+/** Light / dark toggle. The initial theme is set by an inline script in <head>. */
+function initTheme() {
+  const btn = document.getElementById("theme-toggle");
+  if (!btn) return;
+  const root = document.documentElement;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  const label = () =>
+    btn.setAttribute("aria-label", (root.dataset.theme === "dark" ? btn.dataset.labelLight : btn.dataset.labelDark) ?? "");
+  const apply = (theme: "light" | "dark", save: boolean) => {
+    root.classList.add("theme-anim");
+    root.dataset.theme = theme;
+    meta?.setAttribute("content", theme === "dark" ? "#131110" : "#f3ece4");
+    label();
+    window.setTimeout(() => root.classList.remove("theme-anim"), 450);
+    if (save) {
+      try {
+        localStorage.setItem("theme", theme);
+      } catch {}
+    }
+  };
+  label();
+  btn.addEventListener("click", () => apply(root.dataset.theme === "dark" ? "light" : "dark", true));
+  // follow the OS setting until the visitor picks one
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("theme");
+    } catch {}
+    if (!saved) apply(e.matches ? "dark" : "light", false);
+  });
+}
+
 export function initPage() {
+  initTheme();
   initLenis();
   initZebo();
   initCopy();

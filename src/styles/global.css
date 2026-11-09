@@ -14,11 +14,45 @@
   --color-muted: #7d746c;
   --color-brand: #f26b2c;
   --color-term: #1a1514;
+  --color-surface: #ffffff; /* cards, pills */
+  --color-surface-2: #fbf9f7; /* browser bars */
+  --color-on-ink: #ffffff; /* text on bg-ink */
 }
 
 :root {
   --cat: var(--color-brand);
+  --glow: rgb(255 190 160 / 0.45);
+  --grain: rgb(0 0 0 / 0.018);
   color-scheme: light;
+}
+
+/* ---------- dark theme (set by the toggle / system preference) ---------- */
+:root[data-theme="dark"] {
+  --color-paper: #131110;
+  --color-ink: #f3ece4;
+  --color-muted: #a1978d;
+  --color-term: #0c0a09;
+  --color-surface: #1f1b19;
+  --color-surface-2: #282321;
+  --color-on-ink: #141110;
+  --glow: rgb(242 107 44 / 0.16);
+  --grain: rgb(255 255 255 / 0.018);
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .scene {
+  filter: saturate(0.9) brightness(0.92);
+}
+
+/* smooth colour change when switching (not on first paint) */
+:root.theme-anim,
+:root.theme-anim *,
+:root.theme-anim *::before,
+:root.theme-anim *::after {
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    color 0.4s ease,
+    fill 0.4s ease !important;
 }
 
 html {
@@ -29,8 +63,8 @@ body {
   background-color: var(--color-paper);
   /* faint horizontal grain like the reference */
   background-image:
-    radial-gradient(60% 50% at 100% 100%, rgb(255 190 160 / 0.45), transparent 70%),
-    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.018) 0 1px, transparent 1px 3px);
+    radial-gradient(60% 50% at 100% 100%, var(--glow), transparent 70%),
+    repeating-linear-gradient(0deg, var(--grain) 0 1px, transparent 1px 3px);
   background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
@@ -90,6 +124,42 @@ body {
 }
 @keyframes blink { 50% { opacity: 0; } }
 
+/* ---------- theme toggle ---------- */
+.theme-toggle svg { overflow: visible; }
+.theme-toggle .sun,
+.theme-toggle .moon {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.5, 1.6, 0.4, 1);
+}
+.theme-toggle .moon { opacity: 0; transform: rotate(-70deg) scale(0.5); }
+:root[data-theme="dark"] .theme-toggle .sun { opacity: 0; transform: rotate(70deg) scale(0.5); }
+:root[data-theme="dark"] .theme-toggle .moon { opacity: 1; transform: none; }
+
+/* sun: rays orbit around the core on hover */
+.theme-toggle .rays { transform-box: view-box; transform-origin: 12px 12px; }
+.theme-toggle:hover .rays,
+.theme-toggle:focus-visible .rays { animation: orbit 2.4s linear infinite; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+/* moon: little stars twinkle in on hover */
+.theme-toggle .star {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  transform: scale(0);
+}
+.theme-toggle:hover .star,
+.theme-toggle:focus-visible .star { animation: twinkle 1.6s ease-in-out infinite; }
+.theme-toggle .star:nth-of-type(2) { animation-delay: 0.35s; }
+.theme-toggle .star:nth-of-type(3) { animation-delay: 0.7s; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  40%, 60% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .theme-toggle .rays, .theme-toggle .star { animation: none !important; }
+  .theme-toggle:hover .star { opacity: 1; transform: none; }
   .bob, .bob-slow, .caret::after { animation: none; }
 }

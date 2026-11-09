@@ -12,6 +12,8 @@ export const ui = {
     about: { en: "About", id: "Tentang" },
     contact: { en: "Contact", id: "Kontak" },
   },
+  themeToDark: { en: "Switch to dark mode", id: "Ganti ke mode gelap" },
+  themeToLight: { en: "Switch to light mode", id: "Ganti ke mode terang" },
   heroCta: { en: "See my work", id: "Lihat karya" },
   heroContact: { en: "Get in touch", id: "Hubungi aku" },
   scroll: { en: "scroll", id: "gulir" },

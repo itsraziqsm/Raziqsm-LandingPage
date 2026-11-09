@@ -24,21 +24,21 @@ const linkAttrs = href ? { href, target: "_blank", rel: "noopener" } : {};
 ---
 
 <article
-  class="work-card absolute inset-x-0 top-0 mx-auto w-[min(600px,calc(100vw-32px))] overflow-hidden rounded-2xl bg-white shadow-[0_30px_60px_-25px_rgb(60_30_10/0.35),0_2px_6px_rgb(0_0_0/0.06)] will-change-transform"
+  class="work-card absolute inset-x-0 top-0 mx-auto w-[min(600px,calc(100vw-32px))] overflow-hidden rounded-2xl bg-surface shadow-[0_30px_60px_-25px_rgb(60_30_10/0.35),0_2px_6px_rgb(0_0_0/0.06)] will-change-transform"
   data-cat-label={t(cat.label, lang)}
   data-cat-color={cat.color}
   data-cat-index={catIndex}
 >
   <!-- browser chrome -->
-  <div class="flex items-center gap-3 border-b border-black/5 bg-[#fbf9f7] px-3 py-2">
+  <div class="flex items-center gap-3 border-b border-ink/5 bg-surface-2 px-3 py-2">
     <div class="flex gap-1.5">
       <span class="size-2 rounded-full" style={`background:${cat.color}`}></span>
-      <span class="size-2 rounded-full bg-black/15"></span>
-      <span class="size-2 rounded-full bg-black/15"></span>
+      <span class="size-2 rounded-full bg-ink/15"></span>
+      <span class="size-2 rounded-full bg-ink/15"></span>
     </div>
     <Link
       {...linkAttrs}
-      class="min-w-0 flex-1 truncate rounded-md bg-black/[0.04] px-2.5 py-1 font-mono text-[11px] text-muted hover:text-ink sm:text-xs"
+      class="min-w-0 flex-1 truncate rounded-md bg-ink/[0.05] px-2.5 py-1 font-mono text-[11px] text-muted hover:text-ink sm:text-xs"
     >
       <span class="font-semibold text-ink">{host}</span>{path.length ? `/${path.join("/")}` : ""}
     </Link>
@@ -64,7 +64,7 @@ const linkAttrs = href ? { href, target: "_blank", rel: "noopener" } : {};
         </span>
         {
           p.badge && (
-            <span class="rounded-full bg-ink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-white">
+            <span class="rounded-full bg-ink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-on-ink">
               ● {t(p.badge, lang)}
             </span>
           )
