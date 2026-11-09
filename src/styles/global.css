@@ -17,6 +17,7 @@
   --color-surface: #ffffff; /* cards, pills */
   --color-surface-2: #fbf9f7; /* browser bars */
   --color-on-ink: #ffffff; /* text on bg-ink */
+  --color-ok: #1d9467; /* success ticks on light surfaces */
 }
 
 :root {
@@ -35,10 +36,16 @@
   --color-surface: #1f1b19;
   --color-surface-2: #282321;
   --color-on-ink: #141110;
+  --color-ok: #5fd39a;
   --glow: rgb(242 107 44 / 0.16);
   --grain: rgb(255 255 255 / 0.018);
   color-scheme: dark;
 }
+/* warm glow behind the contact card */
+.contact-card {
+  background-image: radial-gradient(70% 90% at 100% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 70%);
+}
+
 :root[data-theme="dark"] .scene {
   filter: saturate(0.9) brightness(0.92);
 }
