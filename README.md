@@ -2,7 +2,7 @@
 
 Bilingual (EN / ID) portfolio landing page with a scroll-driven project card stack, based on the "12 skills, one 3D studio" motion reference.
 
-**Stack:** Astro 7 · Tailwind CSS v4 · GSAP + ScrollTrigger · three.js · Instrument Serif / Inter Tight / JetBrains Mono
+**Stack:** Astro 7 · Tailwind CSS v4 · GSAP + ScrollTrigger · Lenis · three.js · Instrument Serif / Inter Tight / JetBrains Mono
 
 ## Run locally
 

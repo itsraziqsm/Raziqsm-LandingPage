@@ -1,5 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,6 +17,22 @@ function pose(d: number) {
   if (d > 2) return { xPercent: 76, yPercent: 86, rotation: 6, scale: 0.38, autoAlpha: 0, zIndex: 10 };
   if (d === -1) return { xPercent: -92, yPercent: 14, rotation: -3, scale: 0.85, autoAlpha: 1, zIndex: 17 };
   return { xPercent: -130, yPercent: 20, rotation: -5, scale: 0.8, autoAlpha: 0, zIndex: 10 };
+}
+
+/** Smooth scrolling, driven by GSAP's ticker so ScrollTrigger stays in sync. */
+let lenis: Lenis | null = null;
+function initLenis() {
+  if (reduced) return;
+  lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, anchors: true });
+  lenis.on("scroll", ScrollTrigger.update);
+  gsap.ticker.add((time) => lenis!.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+}
+
+/** Scroll to a position: through Lenis when it's on, natively otherwise. */
+function scrollToY(y: number, duration = 0.6) {
+  if (lenis) lenis.scrollTo(y, { duration, easing: (t) => 1 - Math.pow(1 - t, 3) });
+  else window.scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" });
 }
 
 let toastTimer: number | undefined;
@@ -140,15 +158,31 @@ function initWork() {
 
   go(0, true);
 
-  ScrollTrigger.create({
+  const st = ScrollTrigger.create({
     trigger: section,
     start: "top top",
     end: () => `+=${window.innerHeight * 0.6 * (total - 1)}`,
     pin: true,
-    snap: { snapTo: 1 / (total - 1), duration: { min: 0.15, max: 0.45 }, delay: 0.05, ease: "power1.inOut" },
     onUpdate: (self) => go(Math.round(self.progress * (total - 1))),
     invalidateOnRefresh: true,
   });
+
+  // Snap to the nearest card once scrolling settles. Done by hand (instead of
+  // ScrollTrigger's `snap`) so the snap tween goes through Lenis.
+  let snapTimer: number | undefined;
+  const snap = () => {
+    clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(() => {
+      const y = window.scrollY;
+      if (y <= st.start + 2 || y >= st.end - 2) return;
+      const step = (st.end - st.start) / (total - 1);
+      const target = st.start + Math.round((y - st.start) / step) * step;
+      if (Math.abs(target - y) > 2) scrollToY(target, 0.45);
+    }, 140);
+  };
+  // fires 140ms after the last scroll event, i.e. once Lenis has fully settled
+  if (lenis) lenis.on("scroll", snap);
+  else window.addEventListener("scroll", snap, { passive: true });
 }
 
 function initReveals() {
@@ -211,6 +245,7 @@ function initZebo() {
 }
 
 export function initPage() {
+  initLenis();
   initZebo();
   initCopy();
   initLangLinks();
