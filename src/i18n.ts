@@ -12,7 +12,6 @@ export const ui = {
     about: { en: "About", id: "Tentang" },
     contact: { en: "Contact", id: "Kontak" },
   },
-  counter: { en: "projects", id: "proyek" },
   heroCta: { en: "See my work", id: "Lihat karya" },
   heroContact: { en: "Get in touch", id: "Hubungi aku" },
   scroll: { en: "scroll", id: "gulir" },
@@ -20,8 +19,8 @@ export const ui = {
   terminal: { en: "build log", id: "build log" },
   visit: { en: "Visit", id: "Kunjungi" },
   gridTitle: {
-    en: "{n} projects.<br/>One *studio.*",
-    id: "{n} proyek.<br/>Satu *studio.*",
+    en: "{n} crafts.<br/>One *studio.*",
+    id: "{n} bidang.<br/>Satu *studio.*",
   },
   aboutTitle: { en: "About *me*", id: "Tentang *aku*" },
   experience: { en: "Experience", id: "Pengalaman" },

@@ -1,6 +1,6 @@
 ---
 import type { Lang, Project } from "../data/portfolio";
-import { categories, categoryOf } from "../data/portfolio";
+import { categoryOf, projectHref, projectTitle, projectBar, workItems } from "../data/portfolio";
 import { t, ui } from "../i18n";
 import Scene from "./Scene.astro";
 
@@ -13,10 +13,14 @@ interface Props {
 
 const { project: p, index, total, lang } = Astro.props;
 const cat = categoryOf(p.category);
-const catIndex = categories.indexOf(cat);
+// category number follows the order categories first appear in the card stack
+const catIndex = [...new Set(workItems.map((w) => w.category))].indexOf(cat.id);
 const num = (n: number) => String(n).padStart(2, "0");
-const href = p.url.startsWith("http") ? p.url : `https://${p.url}`;
-const [host, ...path] = p.url.split("/");
+const href = projectHref(p);
+const title = projectTitle(p, lang);
+const [host, ...path] = projectBar(p).split("/");
+const Link = href ? "a" : "span";
+const linkAttrs = href ? { href, target: "_blank", rel: "noopener" } : {};
 ---
 
 <article
@@ -32,14 +36,12 @@ const [host, ...path] = p.url.split("/");
       <span class="size-2 rounded-full bg-black/15"></span>
       <span class="size-2 rounded-full bg-black/15"></span>
     </div>
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener"
+    <Link
+      {...linkAttrs}
       class="min-w-0 flex-1 truncate rounded-md bg-black/[0.04] px-2.5 py-1 font-mono text-[11px] text-muted hover:text-ink sm:text-xs"
     >
       <span class="font-semibold text-ink">{host}</span>{path.length ? `/${path.join("/")}` : ""}
-    </a>
+    </Link>
   </div>
 
   <!-- visual -->
@@ -58,7 +60,7 @@ const [host, ...path] = p.url.split("/");
     <div class="min-w-0">
       <div class="flex flex-wrap items-center gap-2">
         <span class="font-mono text-[10px] font-bold uppercase tracking-[0.15em] sm:text-[11px]" style={`color:${cat.color}`}>
-          {t(p.role, lang)} · {p.year}
+          {[t(p.role, lang), p.year].filter(Boolean).join(" · ")}
         </span>
         {
           p.badge && (
@@ -69,7 +71,7 @@ const [host, ...path] = p.url.split("/");
         }
       </div>
       <h3 class="mt-1 text-[clamp(1.75rem,6vw,2.6rem)] leading-[1] font-extrabold tracking-[-0.04em]">
-        <a href={href} target="_blank" rel="noopener" class="hover:underline decoration-2 underline-offset-4">{p.title}</a>
+        <Link {...linkAttrs} class:list={[href && "hover:underline decoration-2 underline-offset-4", p.soon && "text-ink/35"]}>{title}</Link>
       </h3>
       <p class="mt-2 text-sm leading-snug text-ink/80 sm:text-[15px]">{t(p.description, lang)}</p>
       <div class="mt-3 flex flex-wrap gap-1.5">
@@ -97,12 +99,18 @@ const [host, ...path] = p.url.split("/");
       <span class="mb-2 flex items-center gap-1.5 text-[9px] tracking-[0.2em] text-white/40 uppercase">
         <span class="size-1.5 rounded-full bg-white/25"></span><span class="size-1.5 rounded-full bg-white/25"></span><span
           class="size-1.5 rounded-full bg-white/25"></span>
-        <span class="ml-1">{t(ui.terminal, lang)} · {p.client}</span>
+        <span class="ml-1">{[t(ui.terminal, lang), p.client].filter(Boolean).join(" · ")}</span>
       </span>
       <span class="block break-all"
         ><span style={`color:${cat.color}`}>›</span> <span class="cmd">{p.command}</span></span
       >
-      <span class="done block text-[#5fd39a]">✓ {t(p.result, lang)}</span>
+      {
+        p.soon ? (
+          <span class="done block text-white/45">… {p.result && t(p.result, lang)}</span>
+        ) : (
+          <span class="done block text-[#5fd39a]">✓ {p.result ? t(p.result, lang) : "ready"}</span>
+        )
+      }
     </div>
   </div>
 </article>

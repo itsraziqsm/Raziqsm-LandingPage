@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
-//  All portfolio content lives here. Everything is SAMPLE content —
-//  replace it with your own. Text fields take { en, id }.
+//  All portfolio content lives here. Text fields take { en, id }.
+//  Categories without a project automatically get a "coming soon" card.
 // ─────────────────────────────────────────────────────────────
 
 export type Lang = "en" | "id";
@@ -18,38 +18,43 @@ export type Prop =
   | "canvas"
   | "blocks"
   | "layers"
-  | "grid";
+  | "grid"
+  | "phone"
+  | "sheet";
 
 // ── profile ──────────────────────────────────────────────────
 export const profile = {
   handle: "raziqsm",
-  name: "Raziq",
-  role: { en: "Creative Developer", id: "Creative Developer" } as L,
-  location: { en: "Jakarta, Indonesia", id: "Jakarta, Indonesia" } as L,
+  name: "Zeboo",
+  // TODO: pick your role title
+  role: { en: "Web & Creative Developer", id: "Web & Creative Developer" } as L,
+  location: { en: "Internet only", id: "Hanya via internet" } as L,
   available: true,
-  availability: { en: "Open for freelance · Q1 2027", id: "Terbuka untuk freelance · Q1 2027" } as L,
+  availability: {
+    en: "Open for freelance, projects, study & competitions",
+    id: "Terbuka untuk freelance, project, belajar & kompetisi",
+  } as L,
   // headline: text between *asterisks* is rendered in the serif-italic accent
   headline: {
-    en: "I build *web, motion & 3D* experiences people remember.",
-    id: "Aku membangun pengalaman *web, motion & 3D* yang membekas.",
+    en: "Delivering *solutions* for your needs and interests.",
+    id: "Memberikan *solusi* atas kebutuhan dan kepentingan Anda.",
   } as L,
   intro: {
-    en: "Sample bio — a creative developer blending code, motion design and 3D to ship landing pages, products and brand moments.",
-    id: "Contoh bio — creative developer yang memadukan kode, motion design, dan 3D untuk landing page, produk, dan momen brand.",
+    en: "Building solutions that combine user comfort with interactive experiences.",
+    id: "Menghadirkan solusi yang memadukan kenyamanan pengguna dan pengalaman yang interaktif.",
   } as L,
   stats: [
-    { value: "5+", label: { en: "years building", id: "tahun berkarya" } as L },
-    { value: "40+", label: { en: "projects shipped", id: "project selesai" } as L },
-    { value: "20+", label: { en: "happy clients", id: "klien puas" } as L },
+    { value: "6+", label: { en: "months building", id: "bulan berkarya" } as L },
+    { value: "10+", label: { en: "projects", id: "project" } as L },
+    { value: "5+", label: { en: "clients", id: "klien" } as L },
   ],
-  email: "hello@raziqsm.com",
-  cv: "#", // e.g. "/Raziqsm-LandingPage/cv.pdf" once you add public/cv.pdf
+  email: "itsraziqsm@gmail.com",
+  cv: "", // e.g. "/Raziqsm-LandingPage/cv.pdf" once you add public/cv.pdf — empty hides the button
   socials: [
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/raziq-nasrullah-09737331b/" },
     { label: "GitHub", href: "https://github.com/itsraziqsm" },
-    { label: "LinkedIn", href: "#" },
-    { label: "Instagram", href: "#" },
-    { label: "Threads", href: "#" },
-    { label: "Dribbble", href: "#" },
+    { label: "Instagram", href: "https://www.instagram.com/rajikk_23/" },
+    { label: "Threads", href: "https://www.threads.com/@rajikk_23" },
   ],
 };
 
@@ -72,20 +77,23 @@ export const mascot = {
 };
 
 // ── work categories ──────────────────────────────────────────
-export type CategoryId = "web" | "motion" | "3d" | "brand";
+export type CategoryId = "landing" | "mobile" | "sysinfo" | "media";
 
 export interface Category {
   id: CategoryId;
   label: L;
   color: string;
   tint: string;
+  /** used for the "coming soon" card when the category has no project yet */
+  prop: Prop;
+  pose: string;
 }
 
 export const categories: Category[] = [
-  { id: "web", label: { en: "Web", id: "Web" }, color: "#f26b2c", tint: "#f6d9c8" },
-  { id: "motion", label: { en: "Motion", id: "Motion" }, color: "#7559f2", tint: "#dcd8f6" },
-  { id: "3d", label: { en: "3D", id: "3D" }, color: "#1d9467", tint: "#d3e9dc" },
-  { id: "brand", label: { en: "Brand", id: "Brand" }, color: "#1688c4", tint: "#d4e6f2" },
+  { id: "landing", label: { en: "Landing Page", id: "Landing Page" }, color: "#f26b2c", tint: "#f6d9c8", prop: "monitor", pose: "hello" },
+  { id: "mobile", label: { en: "Mobile App", id: "Aplikasi Mobile" }, color: "#7559f2", tint: "#dcd8f6", prop: "phone", pose: "point" },
+  { id: "sysinfo", label: { en: "Information System", id: "Sistem Informasi" }, color: "#1d9467", tint: "#d3e9dc", prop: "sheet", pose: "wave" },
+  { id: "media", label: { en: "Media", id: "Media" }, color: "#1688c4", tint: "#d4e6f2", prop: "camera", pose: "cheer" },
 ];
 
 export const categoryOf = (id: CategoryId) => categories.find((c) => c.id === id)!;
@@ -95,191 +103,91 @@ export interface Project {
   title: string;
   client: string;
   year: string;
-  url: string; // shown in the browser bar + linked
+  url?: string; // shown in the browser bar + linked; omit if none
   category: CategoryId;
   role: L;
   description: L;
   stack: string[];
   /** typed in the terminal block */
   command: string;
-  result: L;
+  result?: L;
   prop: Prop; // placeholder illustration
-  image?: string; // real screenshot, e.g. "/Raziqsm-LandingPage/work/nusa.jpg"
+  image?: string; // real screenshot (2:1), e.g. "/Raziqsm-LandingPage/work/sikertas.webp"
   pose?: string; // Zebo pose key (see `mascot.poses`)
   badge?: L;
   chip?: string;
+  /** generated "coming soon" card */
+  soon?: boolean;
 }
 
 export const projects: Project[] = [
   {
-    title: "Nusa Coffee",
+    title: "SIKerTas",
+    client: "Kantor Akuntan Publik",
+    year: "2026",
+    category: "sysinfo",
+    // TODO: your role on this project
+    role: { en: "Developer", id: "Developer" },
+    description: {
+      en: "Mid-level accounting needs, all through a single door.",
+      id: "Keperluan akuntansi tingkat menengah dalam satu pintu.",
+    },
+    stack: ["Go", "Tailwind", "Excelize"],
+    command: "go run ./cmd/sikertas",
+    prop: "sheet",
     pose: "wave",
-    client: "Nusa Coffee Co.",
-    year: "2026",
-    url: "nusacoffee.example",
-    category: "web",
-    role: { en: "Design + Development", id: "Desain + Development" },
-    description: {
-      en: "E-commerce landing page with scroll-driven product storytelling.",
-      id: "Landing page e-commerce dengan storytelling produk berbasis scroll.",
-    },
-    stack: ["Astro", "GSAP", "Shopify"],
-    command: "npm run deploy -- --prod",
-    result: { en: "+38% conversion in 30 days", id: "+38% konversi dalam 30 hari" },
-    prop: "monitor",
-    badge: { en: "Featured", id: "Unggulan" },
-    chip: "new /checkout-flow",
-  },
-  {
-    title: "Kanal Dashboard",
-    pose: "point",
-    client: "Kanal Logistics",
-    year: "2025",
-    url: "app.kanal.example",
-    category: "web",
-    role: { en: "Frontend Lead", id: "Frontend Lead" },
-    description: {
-      en: "Real-time fleet dashboard for 2,000+ trucks across Java.",
-      id: "Dashboard armada real-time untuk 2.000+ truk di seluruh Jawa.",
-    },
-    stack: ["Next.js", "TypeScript", "Mapbox"],
-    command: "pnpm build && pnpm test",
-    result: { en: "load time 4.1s → 0.9s", id: "waktu muat 4,1d → 0,9d" },
-    prop: "grid",
-  },
-  {
-    title: "Ritme Launch Film",
-    pose: "cheer",
-    client: "Ritme Audio",
-    year: "2026",
-    url: "ritme.example/launch",
-    category: "motion",
-    role: { en: "Motion Designer", id: "Motion Designer" },
-    description: {
-      en: "45-second product launch film, beat-synced to the brand's own track.",
-      id: "Film peluncuran produk 45 detik, sinkron dengan beat lagu brand.",
-    },
-    stack: ["After Effects", "Remotion", "Figma"],
-    command: "npx remotion render launch",
-    result: { en: "1.2M views on launch week", id: "1,2 juta views di minggu peluncuran" },
-    prop: "filmstrip",
-  },
-  {
-    title: "Pulse UI Kit",
-    pose: "hello",
-    client: "Personal",
-    year: "2025",
-    url: "github.com/itsraziqsm/pulse",
-    category: "motion",
-    role: { en: "Creator", id: "Kreator" },
-    description: {
-      en: "Open-source micro-interaction library: 60 easing presets, scroll recipes.",
-      id: "Library micro-interaction open-source: 60 preset easing, resep scroll.",
-    },
-    stack: ["GSAP", "React", "Storybook"],
-    command: "npm i @raziqsm/pulse",
-    result: { en: "★ 2.4K on GitHub", id: "★ 2,4K di GitHub" },
-    prop: "curve",
-  },
-  {
-    title: "Batik Configurator",
-    pose: "peek",
-    client: "Wastra Studio",
-    year: "2026",
-    url: "wastra.example/configure",
-    category: "3d",
-    role: { en: "3D + WebGL Developer", id: "3D + WebGL Developer" },
-    description: {
-      en: "Interactive 3D configurator to design batik patterns on real garments.",
-      id: "Konfigurator 3D interaktif untuk mendesain motif batik di pakaian asli.",
-    },
-    stack: ["Three.js", "Blender", "WebGL"],
-    command: "blender -b scene.blend -E CYCLES",
-    result: { en: "avg. session 6m 12s", id: "rata-rata sesi 6m 12d" },
-    prop: "turntable",
-    chip: "> add a pattern",
-  },
-  {
-    title: "Isometric City",
-    pose: "cheer",
-    client: "Personal",
-    year: "2025",
-    url: "city.raziqsm.example",
-    category: "3d",
-    role: { en: "Creator", id: "Kreator" },
-    description: {
-      en: "A tiny explorable isometric Jakarta, built in a weekend jam.",
-      id: "Jakarta isometrik mini yang bisa dijelajahi, dibuat saat weekend jam.",
-    },
-    stack: ["Three.js", "Vite", "Blender"],
-    command: "vite build --mode jam",
-    result: { en: "Awwwards honorable mention", id: "Awwwards honorable mention" },
-    prop: "blocks",
-  },
-  {
-    title: "Lumbung Identity",
-    pose: "point",
-    client: "Lumbung Fintech",
-    year: "2024",
-    url: "lumbung.example",
-    category: "brand",
-    role: { en: "Brand + Motion System", id: "Sistem Brand + Motion" },
-    description: {
-      en: "Logo, motion language and component library for a fintech rebrand.",
-      id: "Logo, bahasa motion, dan library komponen untuk rebrand fintech.",
-    },
-    stack: ["Figma", "After Effects", "Lottie"],
-    command: "figma export --tokens",
-    result: { en: "rolled out to 3 apps", id: "dipakai di 3 aplikasi" },
-    prop: "boards",
-  },
-  {
-    title: "Senja Festival",
-    pose: "hello",
-    client: "Senja Music Fest",
-    year: "2024",
-    url: "senjafest.example",
-    category: "brand",
-    role: { en: "Visual Identity", id: "Identitas Visual" },
-    description: {
-      en: "Festival identity, stage visuals and a generative poster series.",
-      id: "Identitas festival, visual panggung, dan seri poster generatif.",
-    },
-    stack: ["p5.js", "Figma", "TouchDesigner"],
-    command: "node posters.js --count 120",
-    result: { en: "120 unique posters generated", id: "120 poster unik dihasilkan" },
-    prop: "canvas",
   },
 ];
 
+/** Real projects (in category order) first, then a "coming soon" card per empty category. */
+const byCategory = (p: Project) => categories.findIndex((c) => c.id === p.category);
+export const workItems: Project[] = [
+  ...[...projects].sort((a, b) => byCategory(a) - byCategory(b)),
+  ...categories
+    .filter((c) => !projects.some((p) => p.category === c.id))
+    .map((c): Project => (
+    {
+      title: "", // rendered as the category label
+      client: "",
+      year: "",
+      category: c.id,
+      role: { en: "Coming soon", id: "Segera hadir" },
+      description: { en: "Case study coming soon.", id: "Studi kasus segera hadir." },
+      stack: [],
+      command: "git commit -m \"wip\"",
+      result: { en: "coming soon", id: "segera hadir" },
+      prop: c.prop,
+      pose: c.pose,
+      soon: true,
+    })),
+];
+
 // ── experience ───────────────────────────────────────────────
-export const experience: { period: string; role: L; org: string; note: L }[] = [
+export const experience: { period: L; role: L; org: string; note: L }[] = [
   {
-    period: "2024 — now",
-    role: { en: "Freelance Creative Developer", id: "Creative Developer Freelance" },
-    org: "Independent",
-    note: { en: "Web, motion and 3D for brands and startups.", id: "Web, motion, dan 3D untuk brand dan startup." },
+    period: { en: "2026 — now", id: "2026 — sekarang" },
+    role: { en: "Staff", id: "Staf" },
+    org: "Pemko Medan · Prokopim",
+    note: { en: "Podcast & videography.", id: "Podcast & videografi." },
   },
   {
-    period: "2022 — 2024",
-    role: { en: "Frontend Engineer", id: "Frontend Engineer" },
-    org: "Sample Studio",
-    note: { en: "Led interactive campaigns for 15+ clients.", id: "Memimpin kampanye interaktif untuk 15+ klien." },
-  },
-  {
-    period: "2020 — 2022",
-    role: { en: "Motion Designer", id: "Motion Designer" },
-    org: "Sample Agency",
-    note: { en: "Product films, social content, brand motion.", id: "Film produk, konten sosial, motion brand." },
+    period: { en: "2025 — now", id: "2025 — sekarang" },
+    role: { en: "Freelance Web Developer", id: "Web Freelancer" },
+    org: "Personal",
+    note: {
+      en: "Information systems, company profiles, Android apps.",
+      id: "Sistem informasi, profil perusahaan, aplikasi Android.",
+    },
   },
 ];
 
 // ── toolkit ──────────────────────────────────────────────────
+// Groups with no items are hidden.
 export const tools: { group: L; items: string[] }[] = [
-  { group: { en: "Code", id: "Kode" }, items: ["TypeScript", "Astro", "React", "Next.js", "Tailwind"] },
-  { group: { en: "Motion", id: "Motion" }, items: ["GSAP", "After Effects", "Remotion", "Lottie"] },
-  { group: { en: "3D", id: "3D" }, items: ["Blender", "Three.js", "WebGL", "Spline"] },
-  { group: { en: "Design", id: "Desain" }, items: ["Figma", "Illustrator", "Photoshop"] },
+  { group: { en: "Code", id: "Kode" }, items: ["Go", "Tailwind CSS", "Excelize"] },
+  { group: { en: "Motion", id: "Motion" }, items: [] },
+  { group: { en: "3D", id: "3D" }, items: [] },
+  { group: { en: "Design", id: "Desain" }, items: [] },
 ];
 
 /** Claude Code skills from the original reference — shown as an "AI toolkit". */
@@ -297,3 +205,10 @@ export const aiSkills: { name: string; repo: string; category: L }[] = [
   { name: "anatomy", repo: "wharesryan22/anatomy", category: { en: "3D web", id: "3D web" } },
   { name: "3dviz-pro-max", repo: "viettranx/3dviz-pro-max", category: { en: "3D web", id: "3D web" } },
 ];
+
+// ── helpers ──────────────────────────────────────────────────
+export const projectHref = (p: Project) => (p.url ? (p.url.startsWith("http") ? p.url : `https://${p.url}`) : undefined);
+export const projectTitle = (p: Project, lang: Lang) => (p.soon ? categoryOf(p.category).label[lang] : p.title);
+/** text for the fake browser bar */
+export const projectBar = (p: Project) =>
+  p.url?.replace(/^https?:\/\//, "") ?? (p.soon ? "coming-soon" : p.title.toLowerCase().replace(/\s+/g, "-"));

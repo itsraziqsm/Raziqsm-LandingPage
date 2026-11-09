@@ -157,6 +157,7 @@ function initWork() {
   };
 
   go(0, true);
+  if (total < 2) return; // nothing to scroll through
 
   const st = ScrollTrigger.create({
     trigger: section,
