@@ -32,7 +32,7 @@ Bug tampilan dan aksesibilitas. Tidak butuh bahan baru. **Selesai 10 Nov 2026.**
 - [x] **Menu mobile.** Tombol menu di header membuka panel berisi Karya / Tentang / Kontak dan pilihan bahasa. Tutup dengan klik link, klik di luar, atau Escape. Bagian yang sedang dilihat ditandai (juga di menu desktop).
 - [x] **Angka `01 / 04` kontekstual.** Hanya muncul selama tumpukan kartu ada di layar; tidak dirender sama sekali di mode daftar.
 - [x] **Tombol melayang "let's build something"**: hanya di desktop (pill ringkas kanan bawah). Di HP perannya digantikan link Kontak di menu.
-- [x] **Bagian karya menyesuaikan jumlah project.** Di bawah `STACK_MIN` (3) project asli: kartu asli dalam alur normal tanpa kunci scroll, "Coming soon" hanya di grid. Mulai 3 project: tumpukan + kunci scroll aktif otomatis. Pratinjau tumpukan: `PUBLIC_PREVIEW_STACK=1 npm run dev`.
+- [x] **Bagian karya menyesuaikan jumlah project.** Diatur lewat `WORK_LAYOUT` di `src/data/portfolio.ts`: `"stack"` (tumpukan GSAP, dipakai sekarang atas permintaan pemilik, 10 Nov 2026), `"list"`, atau `"auto"` (daftar di bawah 3 project asli, tumpukan mulai 3).
 - [x] **Layar pendek**: di mode tumpukan gambar kartu dibuat lebih pipih (16:6, lalu 16:5) sehingga kartu tidak perlu banyak dikecilkan (1366×650: 76% → 89%).
 - [x] **Hero mobile**: kartu Zebo pindah ke atas judul dengan bingkai lebih lebar dan pendek, sehingga Zebo dan tombol utama terlihat tanpa scroll.
 

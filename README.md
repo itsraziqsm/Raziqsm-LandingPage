@@ -33,15 +33,13 @@ Add new tunnel hostnames to `server.allowedHosts` in `astro.config.mjs`.
 - **Project card:** `src/components/ProjectCard.astro`
 - **Scroll / card-stack animation:** `src/scripts/showcase.ts`
 
-## Work section modes
+## Work section layout
 
-- Fewer than 3 real projects (`STACK_MIN` in `src/data/portfolio.ts`): the cards are a plain list, no scroll lock.
-- 3 or more: the pinned, scroll-driven card stack turns on automatically.
-- Preview the stack with placeholder cards:
+Set `WORK_LAYOUT` in `src/data/portfolio.ts`:
 
-```bash
-PUBLIC_PREVIEW_STACK=1 npm run dev
-```
+- `"stack"` (current): the pinned, scroll-driven GSAP card stack. Real projects first, then a "coming soon" card per field without a project.
+- `"list"`: real projects only, as plain cards, no scroll lock.
+- `"auto"`: `"list"` below `STACK_MIN` (3) real projects, `"stack"` from there on.
 
 ## Zebo (mascot)
 

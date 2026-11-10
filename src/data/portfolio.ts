@@ -154,12 +154,17 @@ export const projects: Project[] = [
 const byCategory = (p: Project) => categories.findIndex((c) => c.id === p.category);
 const realProjects = [...projects].sort((a, b) => byCategory(a) - byCategory(b));
 
-/** From this many real projects on, the work section becomes the pinned,
- *  scroll-driven card stack. Below it the cards are a plain list (no scroll lock). */
+/**
+ * Layout of the "Selected work" section:
+ * - "stack": pinned, scroll-driven GSAP card stack. Real projects first, then a
+ *   "coming soon" card for every field without a project yet.
+ * - "list":  real projects only, in normal flow, no scroll lock.
+ * - "auto":  "list" below STACK_MIN real projects, "stack" from there on.
+ */
+export const WORK_LAYOUT: "stack" | "list" | "auto" = "stack";
 export const STACK_MIN = 3;
-/** `PUBLIC_PREVIEW_STACK=1 npm run dev` previews the stack with the placeholder cards. */
-const previewStack = import.meta.env.PUBLIC_PREVIEW_STACK === "1";
-export const stackMode = previewStack || realProjects.length >= STACK_MIN;
+export const stackMode =
+  WORK_LAYOUT === "stack" || (WORK_LAYOUT === "auto" && realProjects.length >= STACK_MIN);
 
 /** All-work grid: real projects (in category order) first, then a "coming soon"
  *  card per empty category. */
@@ -184,8 +189,9 @@ export const workItems: Project[] = [
     })),
 ];
 
-/** Cards of the work section: real projects only (placeholders if there are none yet). */
-export const stackItems: Project[] = previewStack || !realProjects.length ? workItems : realProjects;
+/** Cards of the work section: in the stack, real projects + "coming soon" cards
+ *  (so there is something to scroll through); in the list, real projects only. */
+export const stackItems: Project[] = stackMode || !realProjects.length ? workItems : realProjects;
 
 // ── experience ───────────────────────────────────────────────
 export const experience: { period: L; role: L; org: string; note: L }[] = [
