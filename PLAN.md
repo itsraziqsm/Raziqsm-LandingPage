@@ -41,7 +41,7 @@ Bug tampilan dan aksesibilitas. Tidak butuh bahan baru. **Selesai 10 Nov 2026.**
 Kekurangan terbesar untuk portfolio: kartu project belum bisa dibuka.
 
 - [ ] Rancang halaman/popup studi kasus: masalah → solusi → peran → hasil → galeri → stack.
-- [ ] Dukungan dua bahasa (`/work/<slug>/` dan `/id/work/<slug>/`).
+- [ ] Dukungan dua bahasa (`/work/<slug>/` untuk Indonesia, `/en/work/<slug>/` untuk Inggris).
 - [ ] Kartu dan item grid menaut ke studi kasus.
 - [ ] Isi untuk **SIKerTas**.
 
