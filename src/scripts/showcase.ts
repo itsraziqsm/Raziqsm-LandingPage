@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { captureDom, initLangSwitch } from "./langswitch";
 import "lenis/dist/lenis.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -70,26 +71,8 @@ function initCopy() {
   );
 }
 
+/** set by the language switch's fallback (a real page load) to come back to the same section */
 const SECTION_KEY = "goto-section";
-const SECTIONS = ["top", "work", "all", "about", "toolkit", "contact"];
-
-/** Switching language keeps the section on screen, without putting a #hash
- *  in the URL (a hash would stick to bookmarks / history and make the page
- *  open in the middle next time). */
-function initLangLinks() {
-  document.querySelectorAll<HTMLAnchorElement>("[data-lang-link]").forEach((a) =>
-    a.addEventListener("click", () => {
-      let current = "top";
-      for (const id of SECTIONS) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top < innerHeight * 0.4) current = id;
-      }
-      try {
-        if (current !== "top") sessionStorage.setItem(SECTION_KEY, current);
-      } catch {}
-    }),
-  );
-}
 
 /** Page position of a section's top. A pinned section is position: fixed while
  *  pinned, so its own rect reads "here"; use its pin-spacer wrapper instead. */
@@ -265,6 +248,12 @@ function initWork() {
   };
 
   go(0, true);
+  // new language: the big label shows the text for the card on screen
+  window.addEventListener("langchange", () => {
+    const card = cards[Math.max(0, active)];
+    catName.textContent = card.dataset.catLabel ?? "";
+    fit();
+  });
 
   const st = ScrollTrigger.create({
     trigger: section,
@@ -434,27 +423,24 @@ function initWork() {
 }
 
 /**
- * Desktop nav: the active background is one black "liquid" pill that flows
- * from link to link instead of jumping.
- *  1. stretch - the leading edge runs ahead to the new link (the pill thins a little)
+ * Liquid pill: the active background of a segmented control (desktop nav,
+ * language switch) is one black pill that flows from item to item instead of
+ * jumping.
+ *  1. stretch - the leading edge runs ahead to the new item (the pill thins a little)
  *  2. catch up - the trailing edge follows with an elastic, jelly-like settle
- *  3. no active section (hero) - the drop shrinks and fades; it grows back on return
- * Hovering another link makes the pill lean towards it (surface tension).
+ *  3. nothing active - the drop shrinks and fades; it grows back on return
+ * Hovering another item makes the pill lean towards it (surface tension).
  */
-function initNavPill() {
-  const nav = document.getElementById("desktop-nav");
-  const pill = nav?.querySelector<HTMLElement>(".nav-pill");
-  if (!nav || !pill) return null;
-  const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-nav]")];
-  const byId = (id: string) => links.find((l) => l.getAttribute("href") === `#${id}`) ?? null;
-  let current: HTMLAnchorElement | null = null;
+export function createLiquidPill(container: HTMLElement) {
+  const pill = container.querySelector<HTMLElement>(".nav-pill");
+  if (!pill) return null;
+  const items = [...container.querySelectorAll<HTMLAnchorElement>("a")];
+  let current: HTMLElement | null = null;
   let shown = false;
   let tl: gsap.core.Timeline | null = null;
+  const box = (a: HTMLElement) => ({ x: a.offsetLeft, w: a.offsetWidth });
 
-  const box = (a: HTMLAnchorElement) => ({ x: a.offsetLeft, w: a.offsetWidth });
-
-  const moveTo = (id: string) => {
-    const target = id ? byId(id) : null;
+  const moveTo = (target: HTMLElement | null, instant = false) => {
     if (target === current && (target !== null) === shown) return;
     tl?.kill();
     current = target;
@@ -462,18 +448,22 @@ function initNavPill() {
     if (!target) {
       // leave: the drop shrinks into nothing
       shown = false;
-      tl = gsap.timeline().to(pill, { scaleX: 0.4, scaleY: 0.6, opacity: 0, duration: reduced ? 0 : 0.35, ease: "power2.in" });
+      tl = gsap.timeline().to(pill, { scaleX: 0.4, scaleY: 0.6, opacity: 0, duration: reduced || instant ? 0 : 0.35, ease: "power2.in" });
       return;
     }
     const to = box(target);
-    if (!shown || reduced) {
-      // appear: a drop that swells into the pill
+    if (!shown || reduced || instant) {
+      // appear: a drop that swells into the pill (or just sit there on first paint)
       shown = true;
       gsap.set(pill, { x: to.x, width: to.w });
+      if (instant || reduced) {
+        gsap.set(pill, { scaleX: 1, scaleY: 1, opacity: 1 });
+        return;
+      }
       tl = gsap.timeline().fromTo(
         pill,
         { scaleX: 0.3, scaleY: 0.5, opacity: 0 },
-        { scaleX: 1, scaleY: 1, opacity: 1, duration: reduced ? 0 : 0.7, ease: "elastic.out(1, 0.5)" },
+        { scaleX: 1, scaleY: 1, opacity: 1, duration: 0.7, ease: "elastic.out(1, 0.5)" },
       );
       return;
     }
@@ -481,7 +471,7 @@ function initNavPill() {
     const fromX = gsap.getProperty(pill, "x") as number;
     const fromW = gsap.getProperty(pill, "width") as number;
     const right = to.x > fromX;
-    // 1. stretch: cover both the old and the new link, the leading edge first
+    // 1. stretch: cover both the old and the new item, the leading edge first
     const spanX = right ? fromX : to.x;
     const spanW = right ? to.x + to.w - fromX : fromX + fromW - to.x;
     tl = gsap
@@ -492,8 +482,17 @@ function initNavPill() {
       .to(pill, { scaleY: 1, duration: 0.5, ease: "elastic.out(1.2, 0.4)" }, "<");
   };
 
-  // hover: lean towards the hovered link
-  links.forEach((a) => {
+  /** the items changed size (new language, fonts): ease the pill onto the active one */
+  const refresh = (animate = true) => {
+    if (!current || !shown) return;
+    tl?.kill();
+    const to = box(current);
+    if (!animate || reduced) gsap.set(pill, { x: to.x, width: to.w, scaleX: 1, scaleY: 1, opacity: 1 });
+    else tl = gsap.timeline().to(pill, { x: to.x, width: to.w, scaleX: 1, scaleY: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.6)" });
+  };
+
+  // hover: lean towards the hovered item
+  items.forEach((a) => {
     a.addEventListener("pointerenter", () => {
       if (reduced || !shown || !current || a === current || tl?.isActive()) return;
       const from = box(current);
@@ -507,16 +506,37 @@ function initNavPill() {
     });
   });
 
-  // keep it in place when the layout changes (fonts, resize, language)
-  const snap = () => {
-    if (!current || !shown) return;
-    tl?.kill();
-    gsap.set(pill, { ...{ x: box(current).x, width: box(current).w }, scaleX: 1, scaleY: 1, opacity: 1 });
-  };
-  window.addEventListener("resize", snap);
-  document.fonts?.ready.then(snap);
+  // keep it in place when the layout changes
+  window.addEventListener("resize", () => refresh(false));
+  document.fonts?.ready.then(() => refresh(false));
+  // the pill can only be measured once its container is laid out (the mobile menu is hidden at first)
+  new ResizeObserver(() => refresh(false)).observe(container);
 
-  return { moveTo };
+  return { moveTo, refresh };
+}
+
+/** The EN / ID switches (header + mobile menu): liquid pill that follows the language. */
+function initLangPills() {
+  document.querySelectorAll<HTMLElement>(".lang-switch").forEach((group) => {
+    const pill = createLiquidPill(group);
+    if (!pill) return;
+    const linkFor = (lang: string) => group.querySelector<HTMLElement>(`a[data-lang-link="${lang}"]`);
+    pill.moveTo(linkFor(document.documentElement.lang), true);
+    window.addEventListener("langswitchstart", (e) => pill.moveTo(linkFor((e as CustomEvent).detail.lang)));
+  });
+}
+
+/** Desktop nav pill, addressed by section id. */
+function initNavPill() {
+  const nav = document.getElementById("desktop-nav");
+  if (!nav) return null;
+  const p = createLiquidPill(nav);
+  if (!p) return null;
+  const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-nav]")];
+  return {
+    moveTo: (id: string) => p.moveTo((id && links.find((l) => l.getAttribute("href") === `#${id}`)) || null),
+    refresh: p.refresh,
+  };
 }
 
 /** Mobile menu: a panel under the header with the section links and language. */
@@ -531,7 +551,8 @@ function initMenu() {
   };
   set(false);
   btn.addEventListener("click", () => set(btn.getAttribute("aria-expanded") !== "true"));
-  panel.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => set(false)));
+  // section links close the menu; the language switch keeps it open (the text changes in place)
+  panel.querySelectorAll("a:not([data-lang-link])").forEach((a) => a.addEventListener("click", () => set(false)));
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
       set(false);
@@ -548,6 +569,7 @@ function initMenu() {
   // highlight the section currently on screen (panel + desktop nav)
   const links = gsap.utils.toArray<HTMLAnchorElement>("[data-nav]");
   const pill = initNavPill();
+  window.addEventListener("langchange", () => pill?.refresh());
   // after a click, ignore the sections the page scrolls *through* on its way
   let clickTarget = "";
   let clickUntil = 0;
@@ -722,16 +744,19 @@ function initTheme() {
     }
   };
   label();
+  window.addEventListener("langchange", label);
   // light by default; dark only after the visitor picks it (remembered)
   btn.addEventListener("click", () => apply(root.dataset.theme === "dark" ? "light" : "dark", true));
 }
 
 export function initPage() {
+  captureDom(); // before anything below adds or moves elements
   initTheme();
   initLenis();
   initZeebo();
   initCopy();
-  initLangLinks();
+  initLangSwitch();
+  initLangPills();
   initAnchors();
   initWork();
   initMenu();

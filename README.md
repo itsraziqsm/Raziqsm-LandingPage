@@ -40,6 +40,14 @@ are listed in `server.allowedHosts` in the same file.
 - **Project card:** `src/components/ProjectCard.astro`
 - **Scroll / card-stack animation:** `src/scripts/showcase.ts`
 
+## Language switch
+
+EN / ID switches without a page load (`src/scripts/langswitch.ts`): the other language's page is fetched once,
+matched element by element (both come from the same template) and its text is swapped into the live page with a
+blur-fade, while the URL, `<title>` and `<html lang>` follow and back / forward work. Scripts and Cloudflare's
+Email Obfuscation spans are left out of the matching. If the two pages do not line up, it falls back to a normal
+page load and returns to the same section.
+
 ## Work section layout
 
 Set `WORK_LAYOUT` in `src/data/portfolio.ts`:

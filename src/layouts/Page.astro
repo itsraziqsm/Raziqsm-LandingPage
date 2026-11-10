@@ -102,14 +102,17 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
       </nav>
 
       <div class="flex items-center gap-2">
-        <div class="hidden rounded-full bg-surface/80 p-0.5 font-mono text-xs font-bold shadow-sm backdrop-blur md:flex" role="group" aria-label={tr("langLabel")}>
+        <!-- language switch: liquid pill like the nav; switching swaps the text in place (see langswitch.ts) -->
+        <div class="lang-switch relative isolate hidden rounded-full bg-surface p-0.5 font-mono text-xs font-bold shadow-sm md:flex" style="--pill-inset:2px" role="group" aria-label={tr("langLabel")}>
+          <span class="nav-pill" aria-hidden="true"></span>
           {
             (["en", "id"] as const).map((l) => (
               <a
                 href={home[l]}
                 hreflang={l}
-                data-lang-link
-                class:list={["relative rounded-full px-3 py-1.5 uppercase after:absolute after:-inset-y-2 after:inset-x-0", l === lang ? "bg-ink text-on-ink" : "text-muted hover:text-ink"]}
+                data-lang-link={l}
+                data-active={l === lang ? "" : undefined}
+                class="nav-link relative rounded-full px-3 py-1.5 uppercase after:absolute after:-inset-y-2 after:inset-x-0"
                 aria-current={l === lang ? "true" : undefined}
               >
                 {l}
@@ -186,14 +189,16 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
         </nav>
         <div class="mt-2 flex items-center justify-between gap-3 border-t border-ink/10 px-4 pt-3 pb-1">
           <span class="font-mono text-[11px] tracking-[0.15em] text-muted uppercase">{tr("langLabel")}</span>
-          <div class="flex rounded-full bg-ink/5 p-0.5 font-mono text-xs font-bold" role="group" aria-label={tr("langLabel")}>
+          <div class="lang-switch relative isolate flex rounded-full bg-surface-2 p-0.5 font-mono text-xs font-bold" style="--pill-inset:2px" role="group" aria-label={tr("langLabel")}>
+            <span class="nav-pill" aria-hidden="true"></span>
             {
               (["en", "id"] as const).map((l) => (
                 <a
                   href={home[l]}
                   hreflang={l}
-                  data-lang-link
-                  class:list={["rounded-full px-4 py-2.5 uppercase", l === lang ? "bg-ink text-on-ink" : "text-muted"]}
+                  data-lang-link={l}
+                  data-active={l === lang ? "" : undefined}
+                  class="nav-link relative rounded-full px-4 py-2.5 uppercase"
                   aria-current={l === lang ? "true" : undefined}
                 >
                   {l === "en" ? "English" : "Indonesia"}

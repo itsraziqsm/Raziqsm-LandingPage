@@ -88,8 +88,8 @@ html:not(.js) #menu-toggle { display: none; }
 }
 .nav-pill {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  top: var(--pill-inset, 4px);
+  bottom: var(--pill-inset, 4px);
   left: 0;
   width: 0;
   border-radius: 9999px;
