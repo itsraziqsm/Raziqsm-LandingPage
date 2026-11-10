@@ -77,6 +77,34 @@ html:not(.js) #menu-toggle { display: none; }
   #work:not(.is-list) .card-visual { aspect-ratio: 16 / 5; }
 }
 
+/* ---------- desktop nav: liquid active pill ---------- */
+/* Text is white with mix-blend-mode: difference, so it inverts exactly where
+   the pill covers it - also mid-flow, when the pill stretches over a link.
+   (Needs the opaque nav background inside the nav's isolated group.) */
+.nav-link {
+  z-index: 1;
+  color: #fff;
+  mix-blend-mode: difference;
+}
+.nav-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.22),
+    inset 0 -3px 6px rgb(0 0 0 / 0.22),
+    0 6px 14px -6px rgb(0 0 0 / 0.45);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, width;
+}
+/* without JavaScript: plain active state */
+html:not(.js) .nav-link[data-active] { text-decoration: underline; text-underline-offset: 4px; }
+
 /* ---------- header: contextual counter ---------- */
 #counter-wrap {
   max-width: 0;

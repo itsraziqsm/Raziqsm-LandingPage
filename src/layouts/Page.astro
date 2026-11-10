@@ -89,10 +89,12 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
         <span class="hidden text-muted sm:inline">· {t(profile.role, lang).toLowerCase()}</span>
       </a>
 
-      <nav aria-label={tr("navLabel")} class="ml-auto hidden items-center gap-1 rounded-full bg-surface/70 p-1 text-sm shadow-sm backdrop-blur md:flex">
+      <!-- desktop nav: the active pill is one liquid blob that flows between links (see initNavPill) -->
+      <nav id="desktop-nav" aria-label={tr("navLabel")} class="relative isolate ml-auto hidden items-center gap-1 rounded-full bg-surface p-1 text-sm shadow-sm md:flex">
+        <span class="nav-pill" aria-hidden="true"></span>
         {
           navItems.map((n) => (
-            <a href={n.href} data-nav class="rounded-full px-3 py-1 transition hover:bg-ink/5 data-[active]:bg-ink data-[active]:text-on-ink">
+            <a href={n.href} data-nav class="nav-link relative rounded-full px-3 py-1">
               {t(n.label, lang)}
             </a>
           ))

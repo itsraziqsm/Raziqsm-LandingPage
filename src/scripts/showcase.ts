@@ -4,6 +4,8 @@ import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 
 gsap.registerPlugin(ScrollTrigger);
+// dev only: lets tests slow animations down (gsap.globalTimeline.timeScale)
+if (import.meta.env.DEV) (window as unknown as { gsap: typeof gsap }).gsap = gsap;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -89,6 +91,13 @@ function initLangLinks() {
   );
 }
 
+/** Page position of a section's top. A pinned section is position: fixed while
+ *  pinned, so its own rect reads "here"; use its pin-spacer wrapper instead. */
+function sectionTop(el: HTMLElement) {
+  const box = el.parentElement?.classList.contains("pin-spacer") ? el.parentElement : el;
+  return box.getBoundingClientRect().top + window.scrollY;
+}
+
 /** In-page links (#work, #about, #contact …) scroll there without adding a
  *  #hash to the URL. */
 function initAnchors() {
@@ -99,8 +108,9 @@ function initAnchors() {
     const el = id ? document.getElementById(id) : null;
     if (!el) return;
     e.preventDefault();
-    if (lenis) lenis.scrollTo(el, { duration: 1.1 });
-    else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    const y = sectionTop(el);
+    if (lenis) lenis.scrollTo(y, { duration: 1.1 });
+    else window.scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" });
   });
 }
 
@@ -118,7 +128,7 @@ function initStartPosition() {
   if (location.hash) history.replaceState(history.state, "", location.pathname + location.search);
   const go = () => {
     const el = target ? document.getElementById(target) : null;
-    const y = el ? el.getBoundingClientRect().top + window.scrollY : 0;
+    const y = el ? sectionTop(el) : 0;
     if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
     else window.scrollTo(0, y);
   };
@@ -423,6 +433,92 @@ function initWork() {
   else window.addEventListener("scroll", snap, { passive: true });
 }
 
+/**
+ * Desktop nav: the active background is one black "liquid" pill that flows
+ * from link to link instead of jumping.
+ *  1. stretch - the leading edge runs ahead to the new link (the pill thins a little)
+ *  2. catch up - the trailing edge follows with an elastic, jelly-like settle
+ *  3. no active section (hero) - the drop shrinks and fades; it grows back on return
+ * Hovering another link makes the pill lean towards it (surface tension).
+ */
+function initNavPill() {
+  const nav = document.getElementById("desktop-nav");
+  const pill = nav?.querySelector<HTMLElement>(".nav-pill");
+  if (!nav || !pill) return null;
+  const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-nav]")];
+  const byId = (id: string) => links.find((l) => l.getAttribute("href") === `#${id}`) ?? null;
+  let current: HTMLAnchorElement | null = null;
+  let shown = false;
+  let tl: gsap.core.Timeline | null = null;
+
+  const box = (a: HTMLAnchorElement) => ({ x: a.offsetLeft, w: a.offsetWidth });
+
+  const moveTo = (id: string) => {
+    const target = id ? byId(id) : null;
+    if (target === current && (target !== null) === shown) return;
+    tl?.kill();
+    current = target;
+
+    if (!target) {
+      // leave: the drop shrinks into nothing
+      shown = false;
+      tl = gsap.timeline().to(pill, { scaleX: 0.4, scaleY: 0.6, opacity: 0, duration: reduced ? 0 : 0.35, ease: "power2.in" });
+      return;
+    }
+    const to = box(target);
+    if (!shown || reduced) {
+      // appear: a drop that swells into the pill
+      shown = true;
+      gsap.set(pill, { x: to.x, width: to.w });
+      tl = gsap.timeline().fromTo(
+        pill,
+        { scaleX: 0.3, scaleY: 0.5, opacity: 0 },
+        { scaleX: 1, scaleY: 1, opacity: 1, duration: reduced ? 0 : 0.7, ease: "elastic.out(1, 0.5)" },
+      );
+      return;
+    }
+
+    const fromX = gsap.getProperty(pill, "x") as number;
+    const fromW = gsap.getProperty(pill, "width") as number;
+    const right = to.x > fromX;
+    // 1. stretch: cover both the old and the new link, the leading edge first
+    const spanX = right ? fromX : to.x;
+    const spanW = right ? to.x + to.w - fromX : fromX + fromW - to.x;
+    tl = gsap
+      .timeline()
+      .to(pill, { x: spanX, width: spanW, scaleY: 0.86, duration: 0.2, ease: "power2.in" })
+      // 2. catch up: the trailing edge follows, overshoots a little and settles like jelly
+      .to(pill, { x: to.x, width: to.w, duration: 0.65, ease: "elastic.out(1, 0.6)" })
+      .to(pill, { scaleY: 1, duration: 0.5, ease: "elastic.out(1.2, 0.4)" }, "<");
+  };
+
+  // hover: lean towards the hovered link
+  links.forEach((a) => {
+    a.addEventListener("pointerenter", () => {
+      if (reduced || !shown || !current || a === current || tl?.isActive()) return;
+      const from = box(current);
+      const dir = a.offsetLeft > from.x ? 1 : -1;
+      gsap.to(pill, { x: from.x + dir * 5, width: from.w + 6, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+    });
+    a.addEventListener("pointerleave", () => {
+      if (!shown || !current || tl?.isActive()) return;
+      const from = box(current);
+      gsap.to(pill, { x: from.x, width: from.w, duration: 0.6, ease: "elastic.out(1, 0.5)", overwrite: "auto" });
+    });
+  });
+
+  // keep it in place when the layout changes (fonts, resize, language)
+  const snap = () => {
+    if (!current || !shown) return;
+    tl?.kill();
+    gsap.set(pill, { ...{ x: box(current).x, width: box(current).w }, scaleX: 1, scaleY: 1, opacity: 1 });
+  };
+  window.addEventListener("resize", snap);
+  document.fonts?.ready.then(snap);
+
+  return { moveTo };
+}
+
 /** Mobile menu: a panel under the header with the section links and language. */
 function initMenu() {
   const btn = document.getElementById("menu-toggle");
@@ -451,8 +547,24 @@ function initMenu() {
 
   // highlight the section currently on screen (panel + desktop nav)
   const links = gsap.utils.toArray<HTMLAnchorElement>("[data-nav]");
-  const mark = (id: string) => links.forEach((l) => l.toggleAttribute("data-active", l.getAttribute("href") === `#${id}`));
-  [...new Set(links.map((l) => l.getAttribute("href")!.slice(1)))].forEach((id) => {
+  const pill = initNavPill();
+  // after a click, ignore the sections the page scrolls *through* on its way
+  let clickTarget = "";
+  let clickUntil = 0;
+  const mark = (id: string, fromClick = false) => {
+    if (!fromClick && performance.now() < clickUntil && id !== clickTarget) return;
+    links.forEach((l) => l.toggleAttribute("data-active", l.getAttribute("href") === `#${id}`));
+    pill?.moveTo(id);
+  };
+  links.forEach((l) =>
+    l.addEventListener("click", () => {
+      clickTarget = l.getAttribute("href")!.slice(1);
+      clickUntil = performance.now() + 1600;
+      mark(clickTarget, true);
+    }),
+  );
+  const ids = [...new Set(links.map((l) => l.getAttribute("href")!.slice(1)))];
+  ids.forEach((id, i) => {
     const el = document.getElementById(id);
     if (!el) return;
     const next = el.nextElementSibling;
@@ -463,9 +575,11 @@ function initMenu() {
       endTrigger: id === "work" && next?.id === "all" ? next : el,
       end: "bottom 50%",
       onToggle: (self) => self.isActive && mark(id),
+      // above the first section (the hero) nothing is active. (A trigger on the
+      // hero itself never fires at scroll 0, the very top of the page.)
+      onLeaveBack: i === 0 ? () => mark("") : undefined,
     });
   });
-  ScrollTrigger.create({ trigger: "#top", start: "top top", end: "bottom 50%", onToggle: (self) => self.isActive && mark("") });
 }
 
 function initReveals() {
