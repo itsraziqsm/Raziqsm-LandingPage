@@ -74,9 +74,19 @@ Butuh keputusan/isi dari pemilik. Ditandai `TODO` di `src/data/portfolio.ts`.
 
 ## Tahap 6: Performa
 
-- [ ] **Zebo 3D di HP**: three.js (632 KB) + model (343 KB) langsung terunduh karena hero di layar pertama. Tunda sampai halaman idle atau sampai Zebo disentuh; tampilkan gambar diam dulu.
-- [ ] **Font**: 20 file / 422 KB di build. Batasi ke subset latin + latin-ext.
-- [ ] Ukur ulang berat muatan pertama (sekarang 1,5 MB, 14 request).
+**Selesai 10 Nov 2026.**
+
+- [x] **Zebo 3D di HP**: di layar sentuh, mode hemat data, atau 2G, versi 3D tidak lagi dimuat otomatis. Gambar diam tampil, dan 3D dimuat saat Zebo atau tombol "Lihat versi 3D" disentuh. Di desktop, 3D baru dimuat setelah halaman selesai dan browser senggang.
+- [x] **Font**: build dibatasi ke subset latin + latin-ext (20 → 12 file). Font judul (Instrument Serif) di-preload. Urutan deklarasi mengikuti paket aslinya; urutan terbalik membuat browser mengunduh 2 file latin-ext tambahan (+23 KB).
+- [x] Ukur ulang berat muatan pertama.
+
+| Muatan pertama | Sebelum | Sesudah |
+|---|---|---|
+| HP (Pixel 7) | 849 KB, 15 request | 345 KB, 13 request (−59%) |
+| Desktop | 877 KB, 16 request | 874 KB, 16 request; 3D kini dimuat setelah halaman selesai |
+| Font terunduh | 127 KB | 127 KB (sudah hanya latin) |
+
+Belum dikerjakan (manfaat kecil): versi kecil gambar pose Zebo (±28 KB per gambar, dimuat lazy).
 
 ## Rilis
 

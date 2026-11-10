@@ -1,8 +1,11 @@
 @import "tailwindcss";
-@import "@fontsource/instrument-serif/400.css";
-@import "@fontsource/instrument-serif/400-italic.css";
-@import "@fontsource-variable/inter-tight";
-@import "@fontsource-variable/jetbrains-mono";
+/* fonts: latin + latin-ext subsets only */
+/* same order as the packages' own CSS (latin-ext before latin) */
+@import "@fontsource/instrument-serif/latin-ext-400.css";
+@import "@fontsource/instrument-serif/latin-400.css";
+@import "@fontsource/instrument-serif/latin-ext-400-italic.css";
+@import "@fontsource/instrument-serif/latin-400-italic.css";
+@import "./fonts.css";
 
 @theme {
   --font-sans: "Inter Tight Variable", ui-sans-serif, system-ui, sans-serif;
@@ -200,6 +203,13 @@ body {
   animation: blink 1s steps(1) infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
+
+/* ---------- hero: "View in 3D" button ---------- */
+.zebo-3d-btn .loading-label { display: none; }
+.zebo-3d-btn[data-state="loading"] .idle-label { display: none; }
+.zebo-3d-btn[data-state="loading"] .loading-label { display: inline; }
+.zebo-3d-btn[data-state="loading"] svg { animation: spin3d 1s linear infinite; }
+@keyframes spin3d { to { transform: rotate(360deg); } }
 
 /* ---------- AI toolkit disclosure ---------- */
 .ai-toolkit summary::-webkit-details-marker { display: none; }

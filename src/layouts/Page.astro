@@ -5,6 +5,8 @@ import { mascot, profile, projects, stackItems, stackMode, categories, categoryO
 import { t, ui, accent } from "../i18n";
 import ProjectCard from "../components/ProjectCard.astro";
 import Scene from "../components/Scene.astro";
+import serifUrl from "@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url";
+import serifItalicUrl from "@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url";
 
 interface Props {
   lang: Lang;
@@ -64,6 +66,9 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
     <meta property="og:image:alt" content={`${mascot.name} · ${profile.handle}`} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
+    <!-- the hero heading's font: fetch it early instead of after the stylesheet -->
+    <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifItalicUrl} as="font" type="font/woff2" crossorigin />
     <link rel="icon" type="image/png" href={`${base}/favicon.png`} />
     <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
     <link rel="alternate" hreflang="en" href={new URL(home.en, Astro.site)} />
@@ -252,6 +257,19 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
                   fetchpriority="high"
                 />
               </div>
+              <!-- touch screens / Save-Data: the 3D version loads only on request (see initZebo) -->
+              <button
+                id="zebo-3d-btn"
+                type="button"
+                hidden
+                class="zebo-3d-btn absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-term/85 px-3 py-2 font-mono text-[11px] text-white shadow-lg backdrop-blur"
+              >
+                <svg viewBox="0 0 16 16" class="size-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M8 1.5 14 4.75v6.5L8 14.5 2 11.25v-6.5Z M2 4.75 8 8l6-3.25M8 8v6.5"></path>
+                </svg>
+                <span class="idle-label">{tr("zebo3d")}</span>
+                <span class="loading-label">{tr("zebo3dLoading")}</span>
+              </button>
             </div>
           </div>
           <div class="absolute -bottom-6 -left-2 -rotate-3 rounded-xl bg-term px-4 py-3 font-mono text-[11px] text-white shadow-xl sm:-left-8 sm:text-xs">

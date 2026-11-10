@@ -316,24 +316,79 @@ function initReveals() {
   });
 }
 
-/** Lazy-load three.js and mount the interactive 3D Zebo in the hero. */
+/**
+ * Interactive 3D Zebo in the hero (three.js + the GLB ≈ 500 KB over the wire).
+ * - touch screens, Save-Data, 2G: never automatic. The still image stays and
+ *   the 3D version loads when Zebo or the "View in 3D" button is tapped.
+ * - desktop: loads once the page has finished loading and the browser is idle,
+ *   so it never competes with the first paint.
+ */
 function initZebo() {
   const el = document.getElementById("zebo-3d");
+  const btn = document.getElementById("zebo-3d-btn") as HTMLButtonElement | null;
   if (!el?.dataset.src) return;
-  const gl = document.createElement("canvas").getContext("webgl2");
-  if (!gl) return; // keep the still image
-  const io = new IntersectionObserver(async ([e]) => {
-    if (!e.isIntersecting) return;
-    io.disconnect();
-    const { mountZebo } = await import("./zebo3d");
-    mountZebo(el, {
-      src: el.dataset.src!,
-      pose: "wave",
-      yaw: -0.15,
-      onReady: () => el.querySelector<HTMLElement>(".zebo-still")?.classList.add("opacity-0"),
-    });
-  }, { rootMargin: "200px" });
-  io.observe(el);
+  if (!document.createElement("canvas").getContext("webgl2")) return; // keep the still image
+
+  let started = false;
+  const start = async () => {
+    if (started) return;
+    started = true;
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.state = "loading";
+    }
+    try {
+      const { mountZebo } = await import("./zebo3d");
+      mountZebo(el, {
+        src: el.dataset.src!,
+        pose: "wave",
+        yaw: -0.15,
+        onReady: () => {
+          el.querySelector<HTMLElement>(".zebo-still")?.classList.add("opacity-0");
+          btn?.remove();
+        },
+      });
+    } catch {
+      // offline / chunk failed: let the visitor try again
+      started = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.dataset.state = "";
+      }
+    }
+  };
+
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  const onDemand =
+    matchMedia("(pointer: coarse)").matches ||
+    !matchMedia("(hover: hover)").matches ||
+    !!conn?.saveData ||
+    /(^|-)2g$/.test(conn?.effectiveType ?? "");
+
+  if (onDemand) {
+    if (btn) {
+      btn.hidden = false;
+      btn.addEventListener("click", start);
+    }
+    el.addEventListener("click", start);
+    return;
+  }
+
+  const idle = (fn: () => void) =>
+    "requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 2500 }) : window.setTimeout(fn, 1200);
+  const whenVisible = () => {
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        start();
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(el);
+  };
+  if (document.readyState === "complete") idle(whenVisible);
+  else window.addEventListener("load", () => idle(whenVisible), { once: true });
 }
 
 /** Light / dark toggle. The initial theme is set by an inline script in <head>. */
