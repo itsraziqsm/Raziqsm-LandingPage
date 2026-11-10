@@ -21,9 +21,20 @@ function pose(d: number) {
 
 /** Smooth scrolling, driven by GSAP's ticker so ScrollTrigger stays in sync. */
 let lenis: Lenis | null = null;
+type ScrollGuard = (d: { deltaY: number; event: WheelEvent | TouchEvent }) => boolean;
+/** Set by the card stack (see initWork): may swallow a wheel / touch event. */
+let stackGuard: ScrollGuard | null = null;
 function initLenis() {
   if (reduced) return;
-  lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, anchors: true });
+  lenis = new Lenis({
+    lerp: 0.1,
+    wheelMultiplier: 1,
+    anchors: true,
+    // Lenis also drives touch scrolling, so a fast swipe has no native
+    // momentum that could fly through the card stack.
+    syncTouch: true,
+    virtualScroll: (d) => (stackGuard ? stackGuard(d as Parameters<ScrollGuard>[0]) : true),
+  });
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => lenis!.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -211,8 +222,76 @@ function initWork() {
     });
   }
 
-  // Snap to the nearest card once scrolling settles. Done by hand (instead of
-  // ScrollTrigger's `snap`) so the snap tween goes through Lenis.
+  // ── scroll brake: one gesture = one card ──────────────────
+  // However fast the visitor scrolls, the stack moves one card per gesture
+  // and never skips cards. Momentum arriving from above / below stops at the
+  // first / last card. Leaving the stack takes a new gesture.
+  if (lenis) {
+    const l = lenis;
+    const QUIET_MS = 220; // a gesture "ends" after this long without wheel events
+    const STEP_S = 0.75;
+    // time-based, not onComplete: a step tween can be cut short (a tap stops
+    // Lenis, the settle-snap replaces it) and must never leave the brake stuck
+    let busyUntil = 0;
+    let quietUntil = 0;
+    let swipe = 0;
+    let swipeUsed = false;
+    const stepSize = () => (st.end - st.start) / (total - 1);
+    const goTo = (y: number) => {
+      busyUntil = performance.now() + STEP_S * 1000 + 50;
+      l.scrollTo(y, { duration: STEP_S, easing: (t) => 1 - Math.pow(1 - t, 3), force: true });
+    };
+    stackGuard = ({ deltaY, event }) => {
+      const type = event.type;
+      if (type === "touchstart") {
+        swipe = 0;
+        swipeUsed = false;
+        return true;
+      }
+      if (!deltaY) return true;
+      const now = performance.now();
+      const dir = Math.sign(deltaY);
+      const y = l.targetScroll;
+      const { start, end } = st;
+      const ready = now > busyUntil && now > quietUntil;
+      const swallow = () => {
+        if (event.cancelable) event.preventDefault();
+        return false;
+      };
+
+      // outside the stack: only catch momentum that would carry across its edge
+      if (y < start - 1 || y > end + 1) {
+        const crosses = dir > 0 ? y < start && y + deltaY > start : y > end && y + deltaY < end;
+        if (!crosses) return true;
+        goTo(dir > 0 ? start : end);
+        quietUntil = now + QUIET_MS;
+        return swallow();
+      }
+
+      // inside the stack
+      const idx = Math.round((y - start) / stepSize());
+      const atEdge = dir > 0 ? idx >= total - 1 : idx <= 0;
+      if (atEdge && ready && !swipeUsed) return true; // a fresh gesture leaves the stack
+
+      if (type === "touchmove") {
+        swipe += deltaY;
+        if (!swipeUsed && !atEdge && ready && Math.abs(swipe) > 24) {
+          swipeUsed = true;
+          goTo(start + (idx + dir) * stepSize());
+        }
+        return swallow();
+      }
+      if (type.includes("wheel")) {
+        quietUntil = now + QUIET_MS; // keeps extending while the wheel / trackpad momentum lasts
+        if (ready && !atEdge) goTo(start + (idx + dir) * stepSize());
+        return swallow();
+      }
+      return swallow(); // touchend inertia inside the stack
+    };
+  }
+
+  // Snap to the nearest card once scrolling settles (keyboard, scrollbar).
+  // Done by hand (instead of ScrollTrigger's `snap`) so the tween goes through Lenis.
   let snapTimer: number | undefined;
   const snap = () => {
     clearTimeout(snapTimer);
