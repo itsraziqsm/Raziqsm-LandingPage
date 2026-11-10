@@ -2,9 +2,10 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 
-// GitHub Pages: https://itsraziqsm.github.io/Raziqsm-LandingPage/
+// Production: https://raziqsm.warkophajisobirin.fun/Raziqsm-LandingPage/
+// (home server behind a Cloudflare Tunnel, see "Production" in README.md)
 export default defineConfig({
-  site: "https://itsraziqsm.github.io",
+  site: "https://raziqsm.warkophajisobirin.fun",
   base: "/Raziqsm-LandingPage",
   devToolbar: { enabled: false },
   // Hosts allowed to reach `npm run dev` / `npm run preview` besides localhost

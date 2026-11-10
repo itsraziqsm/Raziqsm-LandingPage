@@ -13,16 +13,23 @@ npm run dev
 
 Open http://localhost:4321/Raziqsm-LandingPage/ (Indonesian, default) or http://localhost:4321/Raziqsm-LandingPage/en/ (English)
 
-## Share online (Cloudflare Tunnel)
+## Production (home server)
 
-Serve the production build, not the dev server:
+The live site is https://raziqsm.warkophajisobirin.fun/Raziqsm-LandingPage/ (Indonesian) and `…/en/` (English),
+served from a home server through a Cloudflare Tunnel. On the server, from an up-to-date `main`:
 
 ```bash
-npm run online
+git pull
 ```
 
-This builds the site and serves it on port 4321. Open `https://<your-tunnel-host>/Raziqsm-LandingPage/`.
-Add new tunnel hostnames to `server.allowedHosts` in `astro.config.mjs`.
+```bash
+npm ci && npm run online
+```
+
+`npm run online` builds the site and serves the build (not the dev server) on port 4321, which the tunnel points to.
+The site address lives in `site` (domain) and `base` (`/Raziqsm-LandingPage`) in `astro.config.mjs`; canonical links,
+hreflang and the link-preview image (`public/og.jpg`) are built from them. Tunnel hostnames that may reach the server
+are listed in `server.allowedHosts` in the same file.
 
 ## Edit content
 
@@ -43,15 +50,16 @@ Set `WORK_LAYOUT` in `src/data/portfolio.ts`:
 
 ## Zeebo (mascot)
 
-- `public/zeebo/zeebo.glb`: 3D model (meshopt-compressed), shown interactively in the hero. The head follows the cursor, the arm waves, and Zeebo hops when clicked. Code: `src/scripts/zeebo3d.ts`. three.js is lazy-loaded only for this.
-- `public/zeebo/{wave,hello,cheer,point,peek,think,laptop}.webp`: transparent stills rendered from the model, picked per project with `pose` in `src/data/portfolio.ts`.
-- `public/zeebo/sticker.webp`: flat 2D artwork used for the logo and favicon.
-- New poses are offsets per node (head, ears, arms, tail) in `POSES` inside `zeebo3d.ts`.
+- `public/zeebo/zeebo.glb`: rigged 3D model (29 bones, meshopt-compressed), shown interactively in the hero. Code: `src/scripts/zeebo3d.ts`; three.js is lazy-loaded only for this (on phones only when "Lihat versi 3D" is tapped).
+  - idle: breathing, head follows the cursor, ears and tail sway, natural blinks (fast close, short hold, slower open; also on quick head turns)
+  - "waving excitedly" (2.8 s): plays when Zeebo appears and on every click / tap on its body
+  - hover on Zeebo: happier face; mouse / pen can drag to spin it
+- `public/zeebo/{wave,hello,cheer,point,think,peek,laptop}.webp`: transparent stills rendered from the model, picked per project with `pose` in `src/data/portfolio.ts`. Poses are body-frame bone offsets in `POSES` inside `zeebo3d.ts`.
+- `public/zeebo/sticker.webp` / `sticker-sm.webp`: flat 2D artwork for the logo and favicon.
 
 ## Branches and release
 
-- `main` is production: every push to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.yml`).
-- Every other branch is development: pushes are built to catch errors, never deployed (`.github/workflows/build-check.yml`).
-- Release = bring a development branch into `main` (merge a pull request, or fast-forward `main`).
-
-One-time setup: **Settings → Pages → Source: GitHub Actions**. The site is served at https://itsraziqsm.github.io/Raziqsm-LandingPage/
+- `main` is production: the home server serves `main` (see "Production").
+- Every other branch is development.
+- `.github/workflows/build-check.yml` builds every push (all branches) and every pull request into `main` to catch errors early. Nothing is deployed from GitHub.
+- Release = bring a development branch into `main` (merge a pull request, or fast-forward `main`), then update the server as in "Production".

@@ -1,11 +1,10 @@
-name: Build check (development)
+name: Build check
 
-# Every branch except main is development. Pushes there (and pull requests
-# into main) are built to catch errors before release, but never deployed.
-# Deploying happens only from main, in deploy.yml.
+# Production runs on a home server (see "Production" in README.md), so this
+# workflow only builds: every push (main and development branches) and every
+# pull request into main, to catch errors early. It never deploys anything.
 on:
   push:
-    branches-ignore: [main]
   pull_request:
     branches: [main]
 

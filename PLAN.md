@@ -90,8 +90,9 @@ Belum dikerjakan (manfaat kecil): versi kecil gambar pose Zeebo (±28 KB per gam
 
 ## Rilis
 
-- [x] Buat branch `main` dari `claude/zealous-bell-807lwb` (workflow diperbarui: `withastro/action@v6` dengan Node 24, `deploy-pages@v5`).
-- [ ] Aktifkan GitHub Pages (Settings → Pages → Source: GitHub Actions), lalu jalankan ulang workflow "Deploy to GitHub Pages".
+- [x] Buat branch `main` (produksi); branch lain = pengembangan.
+- [x] Website tayang dari server rumah lewat Cloudflare Tunnel: https://raziqsm.warkophajisobirin.fun/Raziqsm-LandingPage/ (GitHub Pages diarsipkan; workflow deploy-nya dihapus, tinggal pemeriksaan build).
+- [x] Alamat situs, canonical, hreflang, dan gambar pratinjau link memakai alamat tetap itu.
 - [ ] Jadikan `main` sebagai default branch (Settings → General → Default branch).
 - [ ] Cek di perangkat asli (HP Android, iPhone, laptop) terang dan gelap.
 

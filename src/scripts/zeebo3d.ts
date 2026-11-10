@@ -136,10 +136,19 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
     // parent⁻¹ · offset · parent · rest  →  the offset happens around body axes
     b.quaternion.copy(parentQi.get(name)!).multiply(tmpQ).multiply(parentQ.get(name)!).multiply(restQ.get(name)!);
   };
+  // Face bones are not axis-aligned (e.g. eye_L's local Y points *out of the
+  // face*, its vertical is local X), so scales are given in the body frame
+  // (x = across, y = up, z = forward) and routed to whichever local axis is
+  // closest to each body axis. Measured once at load.
+  const scaleMap = new Map<Bone, [number, number, number]>(); // local x/y/z → body axis index
+  /** scale a bone along body axes (x across, y up, z forward) */
   const scaleBone = (name: Bone, sx: number, sy: number, sz: number) => {
     const b = bones.get(name);
     const s = restS.get(name);
-    if (b && s) b.scale.set(s.x * sx, s.y * sy, s.z * sz);
+    if (!b || !s) return;
+    const body = [sx, sy, sz];
+    const m = scaleMap.get(name) ?? [0, 1, 2];
+    b.scale.set(s.x * body[m[0]], s.y * body[m[1]], s.z * body[m[2]]);
   };
   const lift = (name: Bone, dy: number) => {
     const b = bones.get(name);
@@ -153,8 +162,34 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
   const earLag = new THREE.Vector2(); // ears trail the head: a slower copy of `look`
   let happy = 0; // eases to 1 while the pointer is over Zeebo
   let happyTarget = 0;
-  let nextBlink = 2;
+  // blink: fast close, short hold, slower open (a real blink is ~0.25 s, asymmetric)
+  const BLINK_CLOSE = 0.07;
+  const BLINK_HOLD = 0.04;
+  const BLINK_OPEN = 0.13;
+  let nextBlink = 1.6 + Math.random() * 1.5;
   let blinkStart = -1;
+  let lastBlink = -10;
+  let doubleBlink = false;
+  const prevLook = new THREE.Vector2();
+  /** 1 = closed, 0 = open */
+  const blinkAmount = (t: number) => {
+    if (blinkStart < 0) return 0;
+    const p = t - blinkStart;
+    if (p < 0) return 0;
+    if (p < BLINK_CLOSE) {
+      const x = p / BLINK_CLOSE;
+      return x * x; // ease in: the lid accelerates down
+    }
+    if (p < BLINK_CLOSE + BLINK_HOLD) return 1;
+    const x = (p - BLINK_CLOSE - BLINK_HOLD) / BLINK_OPEN;
+    if (x >= 1) return 0;
+    return 1 - (1 - (1 - x) * (1 - x)); // ease out: it slows as it opens
+  };
+  const startBlink = (t: number) => {
+    if (t - lastBlink < 0.35) return; // never mid-blink
+    blinkStart = t;
+    lastBlink = t;
+  };
   let running = true;
   let visible = true;
   let tNow = 0;
@@ -279,20 +314,17 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
     rot("foot_R", ...add(g("foot_R"), -hopH * 2.2, 0, 0));
 
     // face: blink (+ happy squint while waving), brows up, chattering mouth, blush
-    let lid = 1;
-    if (on && blinkStart >= 0) {
-      const p = (t - blinkStart) / 0.16;
-      if (p >= 0 && p <= 1) lid = 1 - s(p * Math.PI) * 0.75;
-    }
-    const squint = lid * (1 - env * 0.25);
-    scaleBone("eye_L", 1, squint, 1);
-    scaleBone("eye_R", 1, squint, 1);
-    const browUp = (env * 0.045 + happy * 0.015) * on;
+    const shut = on ? blinkAmount(t) : 0;
+    const eyeH = (1 - shut * 0.9) * (1 - env * 0.25); // closed = a thin line
+    const eyeW = 1 + shut * 0.05; // a closed lid reads slightly wider
+    scaleBone("eye_L", eyeW, eyeH, 1);
+    scaleBone("eye_R", eyeW, eyeH, 1);
+    const browUp = (env * 0.045 + happy * 0.015) * on - shut * 0.01; // brows dip with the blink
     lift("brow_L", browUp);
     lift("brow_R", browUp);
     const mouth = 1 + (env * (0.3 + s(t * 9) * 0.06) + happy * 0.08) * on;
     scaleBone("mouth", 1 + env * 0.06, mouth, 1);
-    const blush = 1 + (happy * 0.12 + env * 0.15) * on;
+    const blush = 1 + (happy * 0.12 + env * 0.15) * on + shut * 0.03; // cheeks lift a touch
     scaleBone("cheek_L", blush, blush, blush);
     scaleBone("cheek_R", blush, blush, blush);
 
@@ -317,9 +349,22 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
       spin += spinVel;
       spinVel *= Math.pow(0.93, dt * 60);
     }
+    // blinks: every 2–6 s, sometimes twice in a row, and when the head turns fast
     if (t > nextBlink) {
-      blinkStart = t;
-      nextBlink = t + 2.5 + Math.random() * 3 + (Math.random() < 0.2 ? -2.2 : 0); // sometimes a double blink
+      startBlink(t);
+      if (!doubleBlink && Math.random() < 0.18) {
+        doubleBlink = true;
+        nextBlink = t + BLINK_CLOSE + BLINK_HOLD + BLINK_OPEN + 0.12;
+      } else {
+        doubleBlink = false;
+        nextBlink = t + 2 + Math.random() * 4;
+      }
+    }
+    const turnSpeed = look.distanceTo(prevLook) / Math.max(dt, 1e-3);
+    prevLook.copy(look);
+    if (turnSpeed > 2.2 && t - lastBlink > 1.2 && Math.random() < 0.5) {
+      startBlink(t);
+      nextBlink = Math.max(nextBlink, t + 2);
     }
     applyPose(t);
     renderer.render(scene, camera);
@@ -345,6 +390,14 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
       const pq = (b.parent ?? model).getWorldQuaternion(new THREE.Quaternion()).premultiply(modelQi);
       parentQ.set(name, pq);
       parentQi.set(name, pq.clone().invert());
+      // which body axis does each local axis point along?
+      const boneQ = pq.clone().multiply(b.quaternion);
+      const map = [0, 1, 2].map((k) => {
+        const v = new THREE.Vector3(k === 0 ? 1 : 0, k === 1 ? 1 : 0, k === 2 ? 1 : 0).applyQuaternion(boneQ);
+        const a = [Math.abs(v.x), Math.abs(v.y), Math.abs(v.z)];
+        return a.indexOf(Math.max(...a));
+      }) as [number, number, number];
+      scaleMap.set(name, map);
     }
     scene.add(model);
 
@@ -423,6 +476,8 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
     scene,
     /** play the "waving excitedly" animation (2.8 s); calling it mid-wave extends it */
     wave,
+    /** blink once now */
+    blink: () => startBlink(tNow),
     /** draw one frame now (used when rendering stills) */
     render: () => renderer.render(scene, camera),
     destroy() {
