@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:4321/Raziqsm-LandingPage/ (English) or http://localhost:4321/Raziqsm-LandingPage/id/ (Indonesian)
+Open http://localhost:4321/Raziqsm-LandingPage/ (Indonesian, default) or http://localhost:4321/Raziqsm-LandingPage/en/ (English)
 
 ## Share online (Cloudflare Tunnel)
 
@@ -28,7 +28,7 @@ Add new tunnel hostnames to `server.allowedHosts` in `astro.config.mjs`.
 
 - **All content (profile, projects, experience, toolkit, contact):** `src/data/portfolio.ts` — every text field takes `{ en, id }`
 - **UI labels (buttons, headings) in both languages:** `src/i18n.ts`
-- **Page layout / sections:** `src/layouts/Page.astro` (English at `/`, Indonesian at `/id/`)
+- **Page layout / sections:** `src/layouts/Page.astro` (Indonesian at `/`, English at `/en/`; old `/id/` links redirect to `/`)
 - **Placeholder illustrations:** `src/components/Scene.astro`. Pass `image` to use a real render instead.
 - **Project card:** `src/components/ProjectCard.astro`
 - **Scroll / card-stack animation:** `src/scripts/showcase.ts`

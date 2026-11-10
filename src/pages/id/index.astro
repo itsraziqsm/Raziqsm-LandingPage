@@ -1,5 +1,19 @@
 ---
-import Page from "../../layouts/Page.astro";
+// Indonesian used to live at /id/; it is the site root now. Keep old links working.
+const target = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 ---
 
-<Page lang="id" />
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mengalihkan…</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={new URL(target, Astro.site)} />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <script is:inline define:vars={{ target }}>location.replace(target);</script>
+  </head>
+  <body>
+    <a href={target}>Lanjut ke halaman utama</a>
+  </body>
+</html>

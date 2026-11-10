@@ -29,7 +29,6 @@ function initLenis() {
   lenis = new Lenis({
     lerp: 0.1,
     wheelMultiplier: 1,
-    anchors: true,
     // Lenis also drives touch scrolling, so a fast swipe has no native
     // momentum that could fly through the card stack.
     syncTouch: true,
@@ -69,13 +68,70 @@ function initCopy() {
   );
 }
 
-/** Keep the #hash when switching language. */
+const SECTION_KEY = "goto-section";
+const SECTIONS = ["top", "work", "all", "about", "toolkit", "contact"];
+
+/** Switching language keeps the section on screen, without putting a #hash
+ *  in the URL (a hash would stick to bookmarks / history and make the page
+ *  open in the middle next time). */
 function initLangLinks() {
   document.querySelectorAll<HTMLAnchorElement>("[data-lang-link]").forEach((a) =>
     a.addEventListener("click", () => {
-      if (location.hash) a.href = a.href.split("#")[0] + location.hash;
+      let current = "top";
+      for (const id of SECTIONS) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top < innerHeight * 0.4) current = id;
+      }
+      try {
+        if (current !== "top") sessionStorage.setItem(SECTION_KEY, current);
+      } catch {}
     }),
   );
+}
+
+/** In-page links (#work, #about, #contact …) scroll there without adding a
+ *  #hash to the URL. */
+function initAnchors() {
+  document.addEventListener("click", (e) => {
+    const a = (e.target as Element | null)?.closest?.<HTMLAnchorElement>('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const id = a.getAttribute("href")!.slice(1);
+    const el = id ? document.getElementById(id) : null;
+    if (!el) return;
+    e.preventDefault();
+    if (lenis) lenis.scrollTo(el, { duration: 1.1 });
+    else el.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+  });
+}
+
+/**
+ * The page always opens at the top: no browser scroll restoration (set in
+ * <head>) and no #hash jumps. Only a language switch made a moment ago brings
+ * the visitor back to the section they were reading.
+ */
+function initStartPosition() {
+  let target: string | null = null;
+  try {
+    target = sessionStorage.getItem(SECTION_KEY);
+    sessionStorage.removeItem(SECTION_KEY);
+  } catch {}
+  if (location.hash) history.replaceState(history.state, "", location.pathname + location.search);
+  const go = () => {
+    const el = target ? document.getElementById(target) : null;
+    const y = el ? el.getBoundingClientRect().top + window.scrollY : 0;
+    if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+    else window.scrollTo(0, y);
+  };
+  go();
+  // again once ScrollTrigger has added the pinned section's height
+  ScrollTrigger.addEventListener("refresh", function once() {
+    ScrollTrigger.removeEventListener("refresh", once);
+    go();
+  });
+  ScrollTrigger.refresh();
+  // and once more after load, in case the browser moved the page meanwhile
+  // (it can still act on a #hash or a restored position from the first request)
+  if (document.readyState !== "complete") window.addEventListener("load", () => requestAnimationFrame(go), { once: true });
 }
 
 function initWork() {
@@ -550,15 +606,8 @@ function initTheme() {
     }
   };
   label();
+  // light by default; dark only after the visitor picks it (remembered)
   btn.addEventListener("click", () => apply(root.dataset.theme === "dark" ? "light" : "dark", true));
-  // follow the OS setting until the visitor picks one
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-    let saved: string | null = null;
-    try {
-      saved = localStorage.getItem("theme");
-    } catch {}
-    if (!saved) apply(e.matches ? "dark" : "light", false);
-  });
 }
 
 export function initPage() {
@@ -567,7 +616,9 @@ export function initPage() {
   initZeebo();
   initCopy();
   initLangLinks();
+  initAnchors();
   initWork();
   initMenu();
   initReveals();
+  initStartPosition();
 }
