@@ -78,7 +78,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
     <!-- ───────── header ───────── -->
     <header class="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 bg-linear-to-b from-paper via-paper/85 to-transparent px-4 pt-4 pb-6 sm:px-8 sm:pt-5 sm:pb-8">
       <a href={home[lang]} class="relative flex items-center gap-2 text-[13px] after:absolute after:-inset-y-1.5 after:inset-x-0 sm:text-sm">
-        <img src={`${base}/${mascot.stickerSmall}`} alt={mascot.name} width="105" height="96" class="zebo h-8 w-auto -rotate-6 sm:h-9" />
+        <img src={`${base}/${mascot.stickerSmall}`} alt={mascot.name} width="105" height="96" class="zeebo h-8 w-auto -rotate-6 sm:h-9" />
         <span class="font-bold tracking-tight">{profile.handle}</span>
         <span class="hidden text-muted sm:inline">· {t(profile.role, lang).toLowerCase()}</span>
       </a>
@@ -243,9 +243,9 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
             </div>
             <div class="relative aspect-[16/9] sm:aspect-[5/4]">
               <Scene prop="burst" tint="#f6d9c8" color="#f26b2c" seed={42} pose={false} chip={`hi, I'm ${profile.name.toLowerCase()}`} />
-              <!-- interactive 3D Zebo; the still is shown until WebGL is ready -->
+              <!-- interactive 3D Zeebo; the still is shown until WebGL is ready -->
               <div
-                id="zebo-3d"
+                id="zeebo-3d"
                 data-src={`${base}/${mascot.model}`}
                 class="absolute inset-x-0 bottom-0 top-[6%] cursor-pointer"
                 title={`${mascot.name} 👋`}
@@ -253,22 +253,22 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
                 <img
                   src={`${base}/${mascot.poses.wave}`}
                   alt={mascot.name}
-                  class="zebo-still zebo absolute bottom-[2%] left-1/2 h-[92%] w-auto -translate-x-1/2 transition-opacity duration-500"
+                  class="zeebo-still zeebo absolute bottom-[2%] left-1/2 h-[92%] w-auto -translate-x-1/2 transition-opacity duration-500"
                   fetchpriority="high"
                 />
               </div>
-              <!-- touch screens / Save-Data: the 3D version loads only on request (see initZebo) -->
+              <!-- touch screens / Save-Data: the 3D version loads only on request (see initZeebo) -->
               <button
-                id="zebo-3d-btn"
+                id="zeebo-3d-btn"
                 type="button"
                 hidden
-                class="zebo-3d-btn absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-term/85 px-3 py-2 font-mono text-[11px] text-white shadow-lg backdrop-blur"
+                class="zeebo-3d-btn absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-term/85 px-3 py-2 font-mono text-[11px] text-white shadow-lg backdrop-blur"
               >
                 <svg viewBox="0 0 16 16" class="size-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
                   <path d="M8 1.5 14 4.75v6.5L8 14.5 2 11.25v-6.5Z M2 4.75 8 8l6-3.25M8 8v6.5"></path>
                 </svg>
-                <span class="idle-label">{tr("zebo3d")}</span>
-                <span class="loading-label">{tr("zebo3dLoading")}</span>
+                <span class="idle-label">{tr("zeebo3d")}</span>
+                <span class="loading-label">{tr("zeebo3dLoading")}</span>
               </button>
             </div>
           </div>
@@ -488,13 +488,13 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
         <div class="reveal relative overflow-hidden contact-card rounded-[28px] bg-surface px-6 py-14 text-ink shadow-[0_30px_70px_-30px_rgb(60_30_10/0.4)] ring-1 ring-ink/5 sm:px-12 sm:py-20">
           <span class="orb bob aspect-square right-[5%] top-[4%] w-10 sm:right-[8%] sm:top-[10%] sm:w-16 lg:right-[46%] lg:top-[10%] lg:w-12" style="--orb:#f26b2c"></span>
           <span class="orb bob-slow aspect-square right-[34%] bottom-[5%] hidden w-8 lg:block" style="--orb:#7559f2"></span>
-          <!-- the "point" pose, mirrored so Zebo points at the text -->
+          <!-- the "point" pose, mirrored so Zeebo points at the text -->
           <img
             src={`${base}/${mascot.poses.point}`}
             alt=""
             loading="lazy"
             decoding="async"
-            class="zebo bob-slow absolute right-1 bottom-0 h-28 w-auto -scale-x-100 sm:right-6 sm:h-44 lg:right-[5%] lg:h-[84%]"
+            class="zeebo bob-slow absolute right-1 bottom-0 h-28 w-auto -scale-x-100 sm:right-6 sm:h-44 lg:right-[5%] lg:h-[84%]"
           />
           <h2
             class="relative max-w-[14ch] font-serif text-[clamp(2.8rem,9vw,5.5rem)] leading-[0.95]"

@@ -455,15 +455,15 @@ function initReveals() {
 }
 
 /**
- * Interactive 3D Zebo in the hero (three.js + the GLB ≈ 500 KB over the wire).
+ * Interactive 3D Zeebo in the hero (three.js + the GLB ≈ 500 KB over the wire).
  * - touch screens, Save-Data, 2G: never automatic. The still image stays and
- *   the 3D version loads when Zebo or the "View in 3D" button is tapped.
+ *   the 3D version loads when Zeebo or the "View in 3D" button is tapped.
  * - desktop: loads once the page has finished loading and the browser is idle,
  *   so it never competes with the first paint.
  */
-function initZebo() {
-  const el = document.getElementById("zebo-3d");
-  const btn = document.getElementById("zebo-3d-btn") as HTMLButtonElement | null;
+function initZeebo() {
+  const el = document.getElementById("zeebo-3d");
+  const btn = document.getElementById("zeebo-3d-btn") as HTMLButtonElement | null;
   if (!el?.dataset.src) return;
   if (!document.createElement("canvas").getContext("webgl2")) return; // keep the still image
 
@@ -476,13 +476,13 @@ function initZebo() {
       btn.dataset.state = "loading";
     }
     try {
-      const { mountZebo } = await import("./zebo3d");
-      mountZebo(el, {
+      const { mountZeebo } = await import("./zeebo3d");
+      mountZeebo(el, {
         src: el.dataset.src!,
         pose: "wave",
         yaw: -0.15,
         onReady: () => {
-          el.querySelector<HTMLElement>(".zebo-still")?.classList.add("opacity-0");
+          el.querySelector<HTMLElement>(".zeebo-still")?.classList.add("opacity-0");
           btn?.remove();
         },
       });
@@ -564,7 +564,7 @@ function initTheme() {
 export function initPage() {
   initTheme();
   initLenis();
-  initZebo();
+  initZeebo();
   initCopy();
   initLangLinks();
   initWork();

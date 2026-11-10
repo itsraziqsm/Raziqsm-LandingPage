@@ -174,8 +174,8 @@ body {
   opacity: 0.8;
 }
 
-/* Zebo mascot (transparent sticker) */
-.zebo {
+/* Zeebo mascot (transparent sticker) */
+.zeebo {
   pointer-events: none;
   filter: drop-shadow(0 14px 14px rgb(90 30 10 / 0.25));
 }
@@ -205,10 +205,10 @@ body {
 @keyframes blink { 50% { opacity: 0; } }
 
 /* ---------- hero: "View in 3D" button ---------- */
-.zebo-3d-btn .loading-label { display: none; }
-.zebo-3d-btn[data-state="loading"] .idle-label { display: none; }
-.zebo-3d-btn[data-state="loading"] .loading-label { display: inline; }
-.zebo-3d-btn[data-state="loading"] svg { animation: spin3d 1s linear infinite; }
+.zeebo-3d-btn .loading-label { display: none; }
+.zeebo-3d-btn[data-state="loading"] .idle-label { display: none; }
+.zeebo-3d-btn[data-state="loading"] .loading-label { display: inline; }
+.zeebo-3d-btn[data-state="loading"] svg { animation: spin3d 1s linear infinite; }
 @keyframes spin3d { to { transform: rotate(360deg); } }
 
 /* ---------- AI toolkit disclosure ---------- */

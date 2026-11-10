@@ -41,12 +41,12 @@ Set `WORK_LAYOUT` in `src/data/portfolio.ts`:
 - `"list"`: real projects only, as plain cards, no scroll lock.
 - `"auto"`: `"list"` below `STACK_MIN` (3) real projects, `"stack"` from there on.
 
-## Zebo (mascot)
+## Zeebo (mascot)
 
-- `public/zebo/zebo.glb`: 3D model (meshopt-compressed), shown interactively in the hero. The head follows the cursor, the arm waves, and Zebo hops when clicked. Code: `src/scripts/zebo3d.ts`. three.js is lazy-loaded only for this.
-- `public/zebo/{wave,hello,cheer,point,peek,think,laptop}.webp`: transparent stills rendered from the model, picked per project with `pose` in `src/data/portfolio.ts`.
-- `public/zebo/sticker.webp`: flat 2D artwork used for the logo and favicon.
-- New poses are offsets per node (head, ears, arms, tail) in `POSES` inside `zebo3d.ts`.
+- `public/zeebo/zeebo.glb`: 3D model (meshopt-compressed), shown interactively in the hero. The head follows the cursor, the arm waves, and Zeebo hops when clicked. Code: `src/scripts/zeebo3d.ts`. three.js is lazy-loaded only for this.
+- `public/zeebo/{wave,hello,cheer,point,peek,think,laptop}.webp`: transparent stills rendered from the model, picked per project with `pose` in `src/data/portfolio.ts`.
+- `public/zeebo/sticker.webp`: flat 2D artwork used for the logo and favicon.
+- New poses are offsets per node (head, ears, arms, tail) in `POSES` inside `zeebo3d.ts`.
 
 ## Branches and release
 

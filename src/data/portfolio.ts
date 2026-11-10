@@ -25,7 +25,7 @@ export type Prop =
 // ── profile ──────────────────────────────────────────────────
 export const profile = {
   handle: "raziqsm",
-  name: "Zeboo",
+  name: "Zeebo",
   // TODO: pick your role title
   role: { en: "Web & Creative Developer", id: "Web & Creative Developer" } as L,
   location: { en: "Internet only", id: "Hanya via internet" } as L,
@@ -59,23 +59,23 @@ export const profile = {
 };
 
 // ── mascot ───────────────────────────────────────────────────
-// Zebo. `model` is the interactive 3D version used in the hero.
-// `poses` are transparent stills rendered from that model (public/zebo/),
+// Zeebo. `model` is the interactive 3D version used in the hero.
+// `poses` are transparent stills rendered from that model (public/zeebo/),
 // picked per project with `pose`. `sticker` is the flat 2D artwork (logo).
 export const mascot = {
-  name: "Zebo",
-  model: "zebo/zebo.glb",
-  sticker: "zebo/sticker.webp",
-  stickerSmall: "zebo/sticker-sm.webp", // header logo
+  name: "Zeebo",
+  model: "zeebo/zeebo.glb",
+  sticker: "zeebo/sticker.webp",
+  stickerSmall: "zeebo/sticker-sm.webp", // header logo
   defaultPose: "wave",
   poses: {
-    wave: "zebo/wave.webp",
-    hello: "zebo/hello.webp",
-    cheer: "zebo/cheer.webp",
-    point: "zebo/point.webp",
-    peek: "zebo/peek.webp",
-    think: "zebo/think.webp",
-    laptop: "zebo/laptop.webp", // rendered with a laptop prop
+    wave: "zeebo/wave.webp",
+    hello: "zeebo/hello.webp",
+    cheer: "zeebo/cheer.webp",
+    point: "zeebo/point.webp",
+    peek: "zeebo/peek.webp",
+    think: "zeebo/think.webp",
+    laptop: "zeebo/laptop.webp", // rendered with a laptop prop
   } as Record<string, string>,
 };
 
@@ -125,7 +125,7 @@ export interface Project {
   result?: L;
   prop: Prop; // placeholder illustration
   image?: string; // real screenshot (2:1), e.g. "/Raziqsm-LandingPage/work/sikertas.webp"
-  pose?: string; // Zebo pose key (see `mascot.poses`)
+  pose?: string; // Zeebo pose key (see `mascot.poses`)
   badge?: L;
   chip?: string;
   /** generated "coming soon" card */

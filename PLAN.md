@@ -21,7 +21,7 @@ Bug tampilan dan aksesibilitas. Tidak butuh bahan baru. **Selesai 10 Nov 2026.**
   - [x] label kategori hijau/biru/ungu 10px 3,3–4,0 : 1 → varian warna teks yang lebih tua
   - [x] judul kartu "Coming soon" 2,2 : 1
 - [x] **Cincin fokus yang jelas** (`:focus-visible` oranye, 2px) untuk semua link dan tombol.
-- [x] **Gambar pratinjau link** (`og:image` 1200×630 dengan Zebo + nama), `twitter:card`, dan `<link rel="canonical">`.
+- [x] **Gambar pratinjau link** (`og:image` 1200×630 dengan Zeebo + nama), `twitter:card`, dan `<link rel="canonical">`.
 - [x] **Logo header**: buat versi kecil (±72px, ±5 KB) dari `sticker.webp` (sekarang 84 KB untuk tampil 36px).
 - [x] **Struktur judul**: jadikan "Selected work" `<h2>`; beri `aria-label` pada `<nav>`.
 
@@ -34,7 +34,7 @@ Bug tampilan dan aksesibilitas. Tidak butuh bahan baru. **Selesai 10 Nov 2026.**
 - [x] **Tombol melayang "let's build something"**: hanya di desktop (pill ringkas kanan bawah). Di HP perannya digantikan link Kontak di menu.
 - [x] **Bagian karya menyesuaikan jumlah project.** Diatur lewat `WORK_LAYOUT` di `src/data/portfolio.ts`: `"stack"` (tumpukan GSAP, dipakai sekarang atas permintaan pemilik, 10 Nov 2026), `"list"`, atau `"auto"` (daftar di bawah 3 project asli, tumpukan mulai 3).
 - [x] **Layar pendek**: di mode tumpukan gambar kartu dibuat lebih pipih (16:6, lalu 16:5) sehingga kartu tidak perlu banyak dikecilkan (1366×650: 76% → 89%).
-- [x] **Hero mobile**: kartu Zebo pindah ke atas judul dengan bingkai lebih lebar dan pendek, sehingga Zebo dan tombol utama terlihat tanpa scroll.
+- [x] **Hero mobile**: kartu Zeebo pindah ke atas judul dengan bingkai lebih lebar dan pendek, sehingga Zeebo dan tombol utama terlihat tanpa scroll.
 
 ## Tahap 3: Halaman studi kasus
 
@@ -54,10 +54,10 @@ Kekurangan terbesar untuk portfolio: kartu project belum bisa dibuka.
 
 **Selesai 10 Nov 2026.**
 
-- [x] **Kartu kontak**: Zebo (pose menunjuk, dicerminkan supaya menunjuk ke teks) mengisi sisi kanan di desktop, dan tampil kecil di pojok kanan bawah di HP.
+- [x] **Kartu kontak**: Zeebo (pose menunjuk, dicerminkan supaya menunjuk ke teks) mengisi sisi kanan di desktop, dan tampil kecil di pojok kanan bawah di HP.
 - [x] **Grid "4 bidang"**: sekarang kartu bidang keahlian (ilustrasi, nomor, nama, satu kalimat layanan, daftar project di bidang itu atau "studi kasus pertama segera hadir"). Kalimat layanan ada di `blurb` tiap kategori di `src/data/portfolio.ts` dan masih draf.
 - [x] **Toolkit**: judul di kiri, tools di kanan; daftar 12 skill AI jadi panel lipat yang tertutup secara bawaan. Mengisi kelompok Motion / 3D / Desain tetap di Tahap 5.
-- [x] **Pose Zebo baru**: `think` (berpikir, dipakai di kartu profil) dan `laptop` (bekerja dengan laptop, dipakai di bidang Sistem Informasi). Total 7 pose.
+- [x] **Pose Zeebo baru**: `think` (berpikir, dipakai di kartu profil) dan `laptop` (bekerja dengan laptop, dipakai di bidang Sistem Informasi). Total 7 pose.
 - [x] **Terminal di kartu & label `whoami`**: diputuskan tetap gelap di kedua tema, karena memang meniru jendela terminal dan jadi ciri khas desainnya.
 
 ## Tahap 5: Konten
@@ -76,7 +76,7 @@ Butuh keputusan/isi dari pemilik. Ditandai `TODO` di `src/data/portfolio.ts`.
 
 **Selesai 10 Nov 2026.**
 
-- [x] **Zebo 3D di HP**: di layar sentuh, mode hemat data, atau 2G, versi 3D tidak lagi dimuat otomatis. Gambar diam tampil, dan 3D dimuat saat Zebo atau tombol "Lihat versi 3D" disentuh. Di desktop, 3D baru dimuat setelah halaman selesai dan browser senggang.
+- [x] **Zeebo 3D di HP**: di layar sentuh, mode hemat data, atau 2G, versi 3D tidak lagi dimuat otomatis. Gambar diam tampil, dan 3D dimuat saat Zeebo atau tombol "Lihat versi 3D" disentuh. Di desktop, 3D baru dimuat setelah halaman selesai dan browser senggang.
 - [x] **Font**: build dibatasi ke subset latin + latin-ext (20 → 12 file). Font judul (Instrument Serif) di-preload. Urutan deklarasi mengikuti paket aslinya; urutan terbalik membuat browser mengunduh 2 file latin-ext tambahan (+23 KB).
 - [x] Ukur ulang berat muatan pertama.
 
@@ -86,7 +86,7 @@ Butuh keputusan/isi dari pemilik. Ditandai `TODO` di `src/data/portfolio.ts`.
 | Desktop | 877 KB, 16 request | 874 KB, 16 request; 3D kini dimuat setelah halaman selesai |
 | Font terunduh | 127 KB | 127 KB (sudah hanya latin) |
 
-Belum dikerjakan (manfaat kecil): versi kecil gambar pose Zebo (±28 KB per gambar, dimuat lazy).
+Belum dikerjakan (manfaat kecil): versi kecil gambar pose Zeebo (±28 KB per gambar, dimuat lazy).
 
 ## Rilis
 
