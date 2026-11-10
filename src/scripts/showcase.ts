@@ -223,24 +223,60 @@ function initWork() {
   }
 
   // ── scroll brake: one gesture = one card ──────────────────
-  // However fast the visitor scrolls, the stack moves one card per gesture
-  // and never skips cards. Momentum arriving from above / below stops at the
-  // first / last card. Leaving the stack takes a new gesture.
+  // However fast the visitor scrolls, the stack moves one card at a time and
+  // never skips cards. Momentum arriving from above / below stops at the
+  // first / last card.
+  //
+  // Wheel / trackpad: a card change needs *intent*, not just "any event":
+  //  - a fresh push: after a pause, or a delta that jumps up (momentum only decays),
+  //  - or steady input (mouse wheel kept spinning, slow trackpad drag) once the
+  //    previous card has been on screen for HOLD_MS.
+  // Decaying trackpad momentum and tiny tail deltas never count, so they can
+  // neither skip cards nor keep the brake locked. A fresh push that arrives
+  // while a card is still moving is queued and runs right after.
+  // Touch: one swipe = one card.
   if (lenis) {
     const l = lenis;
-    const QUIET_MS = 220; // a gesture "ends" after this long without wheel events
-    const STEP_S = 0.75;
+    const STEP_S = 0.7; // card change duration
+    const QUIET_MS = 200; // no wheel events for this long = the next event is a new gesture
+    const HOLD_MS = 250; // steady input moves on only after the card has shown this long
+    const TINY = 4; // |delta| below this is momentum tail: ignored
     // time-based, not onComplete: a step tween can be cut short (a tap stops
     // Lenis, the settle-snap replaces it) and must never leave the brake stuck
     let busyUntil = 0;
-    let quietUntil = 0;
+    let dest = 0; // where the running card change is heading
+    let quietUntil = 0; // touch: blocks a swipe right after momentum was caught at an edge
+    let lastWheelAt = 0;
+    let prev1 = 0; // |delta| of the previous wheel event
+    let prev2 = 0; // ... and the one before
+    let queued = 0; // a step (+1 / -1) waiting for the current change to finish
+    let caught = false; // momentum was just stopped at the stack's edge: wait for a fresh push
+    let queueTimer = 0;
     let swipe = 0;
     let swipeUsed = false;
     const stepSize = () => (st.end - st.start) / (total - 1);
+    const indexAt = (y: number) => Math.round((y - st.start) / stepSize());
+    // during a card change Lenis' target is still travelling: use the destination
+    const pos = () => (performance.now() < busyUntil ? dest : l.targetScroll);
     const goTo = (y: number) => {
-      busyUntil = performance.now() + STEP_S * 1000 + 50;
+      dest = y;
+      busyUntil = performance.now() + STEP_S * 1000 + 40;
       l.scrollTo(y, { duration: STEP_S, easing: (t) => 1 - Math.pow(1 - t, 3), force: true });
+      clearTimeout(queueTimer);
+      queueTimer = window.setTimeout(runQueued, STEP_S * 1000 + 60);
     };
+    const step = (dir: number) => {
+      const next = indexAt(pos()) + dir;
+      if (next < 0 || next > total - 1) return false;
+      goTo(st.start + next * stepSize());
+      return true;
+    };
+    function runQueued() {
+      const dir = queued;
+      queued = 0;
+      if (dir) step(dir);
+    }
+
     stackGuard = ({ deltaY, event }) => {
       const type = event.type;
       if (type === "touchstart") {
@@ -251,42 +287,65 @@ function initWork() {
       if (!deltaY) return true;
       const now = performance.now();
       const dir = Math.sign(deltaY);
-      const y = l.targetScroll;
+      const y = pos();
       const { start, end } = st;
-      const ready = now > busyUntil && now > quietUntil;
+      const free = now > busyUntil;
       const swallow = () => {
         if (event.cancelable) event.preventDefault();
         return false;
       };
 
+      // wheel intent (computed for every wheel event so the history stays current)
+      const isWheel = type.includes("wheel");
+      let fresh = false;
+      let steady = false;
+      if (isWheel) {
+        const a = Math.abs(deltaY);
+        fresh = now - lastWheelAt > QUIET_MS || (a >= TINY && a > prev1 * 1.25 + 1);
+        steady = a >= TINY && a >= prev1 && prev1 >= prev2 && prev2 >= TINY;
+        prev2 = prev1;
+        prev1 = a;
+        lastWheelAt = now;
+      }
+
       // outside the stack: only catch momentum that would carry across its edge
       if (y < start - 1 || y > end + 1) {
         const crosses = dir > 0 ? y < start && y + deltaY > start : y > end && y + deltaY < end;
         if (!crosses) return true;
+        queued = 0;
+        caught = isWheel;
         goTo(dir > 0 ? start : end);
         quietUntil = now + QUIET_MS;
         return swallow();
       }
 
       // inside the stack
-      const idx = Math.round((y - start) / stepSize());
-      const atEdge = dir > 0 ? idx >= total - 1 : idx <= 0;
-      if (atEdge && ready && !swipeUsed) return true; // a fresh gesture leaves the stack
+      const atEdge = dir > 0 ? indexAt(y) >= total - 1 : indexAt(y) <= 0;
 
+      if (isWheel) {
+        // leaving the stack needs a fresh push once the last (or first) card has landed,
+        // so a long spin / drag stops at the edge card instead of flying past it
+        if (atEdge) return fresh && free ? true : swallow();
+        if (caught && !fresh) return swallow(); // the momentum that carried us in is not a new push
+        caught = false;
+        const intent = fresh || (steady && now > busyUntil + HOLD_MS);
+        if (!intent) return swallow(); // decaying momentum, tiny tail, or too soon
+        if (free) step(dir);
+        else if (fresh) queued = dir; // remember one push made mid-change
+        return swallow();
+      }
+
+      // touch
+      const ready = free && now > quietUntil;
+      if (atEdge && ready && !swipeUsed) return true; // a fresh swipe leaves the stack
       if (type === "touchmove") {
         swipe += deltaY;
         if (!swipeUsed && !atEdge && ready && Math.abs(swipe) > 24) {
           swipeUsed = true;
-          goTo(start + (idx + dir) * stepSize());
+          step(dir);
         }
-        return swallow();
       }
-      if (type.includes("wheel")) {
-        quietUntil = now + QUIET_MS; // keeps extending while the wheel / trackpad momentum lasts
-        if (ready && !atEdge) goTo(start + (idx + dir) * stepSize());
-        return swallow();
-      }
-      return swallow(); // touchend inertia inside the stack
+      return swallow(); // rest of the swipe, and touchend inertia
     };
   }
 
