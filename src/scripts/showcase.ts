@@ -2,6 +2,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { captureDom, initLangSwitch } from "./langswitch";
+import { initChat } from "./chat";
+import { initScrollbar } from "./scrollbar";
 import "lenis/dist/lenis.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -333,6 +335,8 @@ function initWork() {
     }
 
     stackGuard = ({ deltaY, event }) => {
+      // scrolling inside a scrollable box (the chat) is not page scrolling
+      if ((event.target as Element | null)?.closest?.("[data-lenis-prevent]")) return true;
       const type = event.type;
       if (type === "touchstart") {
         swipe = 0;
@@ -762,4 +766,6 @@ export function initPage() {
   initMenu();
   initReveals();
   initStartPosition();
+  initChat();
+  initScrollbar(lenis, sectionTop);
 }

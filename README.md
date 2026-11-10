@@ -48,6 +48,16 @@ blur-fade, while the URL, `<title>` and `<html lang>` follow and back / forward 
 Email Obfuscation spans are left out of the matching. If the two pages do not line up, it falls back to a normal
 page load and returns to the same section.
 
+## Chat and scrollbar
+
+- **Ask Zeebo** (`src/components/ChatBot.astro`, `src/scripts/chat.ts`): chat button bottom right. Placeholder for now:
+  the suggested questions are answered from `src/data/portfolio.ts` (both languages); free text gets a "still learning"
+  reply. To connect a real AI later, replace `reply()` in `chat.ts`.
+- **Custom scrollbar** (`src/components/ScrollBar.astro`, `src/scripts/scrollbar.ts`): replaces the native one (only
+  once the script runs), synced with Lenis, draggable, with section ticks. A small peeking Zeebo rides next to the thumb
+  as a page-position marker, leans with the scroll speed and shows the current section; on touch screens it only
+  appears while scrolling.
+
 ## Work section layout
 
 Set `WORK_LAYOUT` in `src/data/portfolio.ts`:

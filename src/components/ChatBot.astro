@@ -1,0 +1,86 @@
+---
+// "Ask Zeebo": chat launcher + panel, bottom right. Placeholder for now: the
+// suggested questions are answered from this portfolio's data (no AI yet);
+// free text gets a friendly "still learning" reply. Behaviour: src/scripts/chat.ts
+import type { Lang } from "../data/portfolio";
+import { mascot, profile, projects, categories, categoryOf, tools } from "../data/portfolio";
+import { t, ui } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
+const questions = [
+  { id: "services", q: tr("qServices") },
+  { id: "projects", q: tr("qProjects") },
+  { id: "tools", q: tr("qTools") },
+  { id: "contact", q: tr("qContact") },
+];
+const toolGroups = tools.filter((g) => g.items.length);
+---
+
+<div id="chat" class="chat" data-open="false">
+  <section id="chat-panel" class="chat-panel" role="dialog" aria-labelledby="chat-title" inert>
+    <header class="flex items-center gap-3 border-b border-ink/10 px-4 py-3">
+      <img src={`${base}/${mascot.stickerSmall}`} alt="" width="105" height="96" class="zeebo h-9 w-auto -rotate-6" />
+      <div class="min-w-0 flex-1">
+        <p id="chat-title" class="text-sm font-extrabold tracking-tight">{tr("chatOpen")}</p>
+        <p class="truncate font-mono text-[10px] text-muted">{tr("chatStatus")}</p>
+      </div>
+      <button id="chat-close" type="button" class="grid size-9 place-items-center rounded-full text-muted transition hover:bg-ink/5 hover:text-ink" aria-label={tr("chatClose")}>
+        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </button>
+    </header>
+
+    <!-- data-lenis-prevent: wheel / touch scroll the conversation, not the page -->
+    <div id="chat-log" class="chat-log" aria-live="polite" data-lenis-prevent>
+      <div class="msg bot">{tr("chatGreeting")}</div>
+    </div>
+
+    <div class="chat-suggest" role="group" aria-label={tr("chatOpen")}>
+      {questions.map((q) => <button type="button" data-chat-q={q.id}>{q.q}</button>)}
+    </div>
+
+    <form id="chat-form" class="flex items-center gap-2 border-t border-ink/10 p-3">
+      <input id="chat-input" name="q" type="text" autocomplete="off" maxlength="300" placeholder={tr("chatPlaceholder")} aria-label={tr("chatPlaceholder")} />
+      <button type="submit" class="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-on-ink transition hover:opacity-90" aria-label={tr("chatSend")}>
+        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
+      </button>
+    </form>
+
+    <!-- answers (in the page's language, so the language switch translates them too) -->
+    <div hidden>
+      <div data-chat-a="services">
+        <p>{tr("aServicesIntro")}</p>
+        <ul>{categories.map((c) => <li><b>{t(c.label, lang)}</b> · {t(c.blurb, lang)}</li>)}</ul>
+      </div>
+      <div data-chat-a="projects">
+        <ul>
+          {projects.map((p) => <li><b>{p.title}</b> · {t(categoryOf(p.category).label, lang)} · {p.year}<br />{t(p.description, lang)}</li>)}
+        </ul>
+        <p>{tr("aProjectsMore")}</p>
+      </div>
+      <div data-chat-a="tools">
+        <p>{tr("aToolsIntro")}</p>
+        <ul>{toolGroups.map((g) => <li><b>{t(g.group, lang)}</b> · {g.items.join(", ")}</li>)}</ul>
+      </div>
+      <div data-chat-a="contact">
+        <p>{tr("aContactIntro")} <a href={`mailto:${profile.email}`}>{profile.email}</a></p>
+        <p>{t(profile.availability, lang)}.</p>
+        <p>{tr("aContactAlso")} {profile.socials.map((s, i) => <Fragment>{i > 0 && ", "}<a href={s.href} target="_blank" rel="noopener">{s.label}</a></Fragment>)}.</p>
+      </div>
+      <div data-chat-a="learning">
+        <p>{tr("chatLearning")} <a href={`mailto:${profile.email}`}>{profile.email}</a>.</p>
+      </div>
+      <span data-chat-typing>{tr("chatTyping")}</span>
+    </div>
+  </section>
+
+  <button id="chat-toggle" type="button" class="chat-fab" aria-expanded="false" aria-controls="chat-panel" aria-label={tr("chatOpen")}>
+    <img src={`${base}/${mascot.stickerSmall}`} alt="" width="105" height="96" class="chat-fab-zeebo" />
+    <svg viewBox="0 0 24 24" class="chat-fab-close" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+    <span class="chat-fab-dot" aria-hidden="true"></span>
+  </button>
+</div>

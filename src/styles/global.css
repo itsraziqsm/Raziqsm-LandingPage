@@ -105,6 +105,224 @@ html:not(.js) #menu-toggle { display: none; }
 /* without JavaScript: plain active state */
 html:not(.js) .nav-link[data-active] { text-decoration: underline; text-underline-offset: 4px; }
 
+/* ---------- custom scrollbar + Zeebo position marker ---------- */
+html.custom-sb { scrollbar-width: none; }
+html.custom-sb::-webkit-scrollbar { display: none; }
+.scrollbar {
+  position: fixed;
+  right: 0;
+  top: 88px;
+  bottom: 100px; /* ends above the chat button */
+  z-index: 45;
+  width: 18px;
+  cursor: pointer;
+  touch-action: none;
+}
+html:not(.custom-sb) .scrollbar { display: none; }
+.sb-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--color-ink) 12%, transparent);
+}
+.sb-tick {
+  position: absolute;
+  right: 7px;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--color-ink) 35%, transparent);
+  pointer-events: none;
+}
+.sb-thumb {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  width: 6px;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  opacity: 0.45;
+  cursor: grab;
+  transition: opacity 0.25s ease, width 0.25s ease, right 0.25s ease;
+}
+.scrollbar[data-active="true"] .sb-thumb,
+.scrollbar:hover .sb-thumb { opacity: 0.85; width: 8px; right: 5px; }
+.scrollbar[data-dragging="true"] .sb-thumb { cursor: grabbing; }
+.sb-marker {
+  position: absolute;
+  top: 0;
+  right: 16px;
+  /* the 18 px wide bar is its containing block: without this the box shrinks and Zeebo spills off screen */
+  width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform-origin: 85% 50%;
+  cursor: grab;
+  will-change: transform;
+}
+.sb-zeebo {
+  height: 40px;
+  width: auto;
+  filter: drop-shadow(0 6px 8px rgb(90 30 10 / 0.25));
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: height 0.3s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.scrollbar[data-active="true"] .sb-zeebo,
+.scrollbar:hover .sb-zeebo { height: 46px; }
+.sb-label {
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+  pointer-events: none;
+}
+.scrollbar[data-active="true"] .sb-label,
+.scrollbar:hover .sb-label { opacity: 1; transform: none; }
+/* touch screens: out of the way unless scrolling */
+.scrollbar[data-touch="true"] { top: 76px; bottom: 88px; transition: opacity 0.35s ease; opacity: 0; }
+.scrollbar[data-touch="true"][data-active="true"] { opacity: 1; }
+.scrollbar[data-touch="true"] .sb-zeebo { height: 32px; }
+.scrollbar[data-touch="true"][data-active="true"] .sb-zeebo { height: 36px; }
+@media (max-width: 767px) { .sb-track, .sb-tick { opacity: 0.7; } }
+
+/* ---------- "Ask Zeebo" chat ---------- */
+.chat {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+}
+@media (min-width: 768px) { .chat { right: 28px; bottom: 24px; } }
+.chat-fab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  box-shadow: 0 14px 30px -12px rgb(30 15 5 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.18);
+  transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.chat-fab:hover { transform: translateY(-2px) rotate(-6deg) scale(1.04); }
+.chat-fab-zeebo,
+.chat-fab-close { grid-area: 1 / 1; transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.chat-fab-zeebo { width: 40px; height: auto; transform: rotate(-6deg); }
+.chat-fab-close { width: 22px; opacity: 0; transform: rotate(-90deg) scale(0.6); }
+.chat[data-open="true"] .chat-fab-zeebo { opacity: 0; transform: rotate(30deg) scale(0.5); }
+.chat[data-open="true"] .chat-fab-close { opacity: 1; transform: none; }
+.chat-fab-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 2px var(--color-paper);
+  animation: chat-ping 2.4s ease-out infinite;
+}
+.chat[data-seen="true"] .chat-fab-dot { display: none; }
+@keyframes chat-ping {
+  0%, 70%, 100% { transform: scale(1); }
+  80% { transform: scale(1.35); }
+}
+.chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: 70px;
+  display: flex;
+  flex-direction: column;
+  width: min(370px, calc(100vw - 32px));
+  max-height: min(560px, calc(100svh - 120px));
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 30px 70px -25px rgb(30 15 5 / 0.45), 0 0 0 1px color-mix(in oklab, var(--color-ink) 6%, transparent);
+  transform-origin: calc(100% - 28px) calc(100% + 40px);
+  transition: opacity 0.22s ease, transform 0.45s cubic-bezier(0.3, 1.35, 0.5, 1), visibility 0s linear 0.45s;
+  opacity: 0;
+  transform: translateY(14px) scale(0.9);
+  visibility: hidden;
+}
+.chat[data-open="true"] .chat-panel { opacity: 1; transform: none; visibility: visible; transition-delay: 0s; }
+.chat-log {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 140px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+}
+.msg {
+  max-width: 86%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  animation: msg-in 0.4s cubic-bezier(0.3, 1.35, 0.5, 1) both;
+}
+.msg.bot { align-self: flex-start; border-bottom-left-radius: 6px; background: var(--color-surface-2); }
+.msg.me { align-self: flex-end; border-bottom-right-radius: 6px; background: var(--color-ink); color: var(--color-on-ink); }
+.msg ul { margin-top: 0.35em; padding-left: 1.1em; list-style: disc; }
+.msg li + li { margin-top: 0.3em; }
+.msg p + p, .msg p + ul, .msg ul + p { margin-top: 0.5em; }
+.msg a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; }
+.msg.typing { display: flex; gap: 4px; padding: 14px 16px; }
+.msg.typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-muted);
+  animation: typing-dot 1s ease-in-out infinite;
+}
+.msg.typing i:nth-child(2) { animation-delay: 0.15s; }
+.msg.typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing-dot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-4px); opacity: 1; } }
+@keyframes msg-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+.chat-suggest { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 12px; }
+.chat-suggest button {
+  padding: 6px 12px;
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 16%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.chat-suggest button:hover { background: var(--color-ink); color: var(--color-on-ink); }
+#chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  background: var(--color-surface-2);
+  font-size: 14px;
+  outline: none;
+}
+#chat-input:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
+@media (prefers-reduced-motion: reduce) {
+  .msg, .chat-fab-dot, .msg.typing i { animation: none; }
+}
+
 /* ---------- header: contextual counter ---------- */
 #counter-wrap {
   max-width: 0;

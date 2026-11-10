@@ -67,6 +67,7 @@ export const mascot = {
   model: "zeebo/zeebo.glb",
   sticker: "zeebo/sticker.webp",
   stickerSmall: "zeebo/sticker-sm.webp", // header logo
+  marker: "zeebo/peek-sm.webp", // scroll position marker next to the scrollbar
   defaultPose: "wave",
   poses: {
     wave: "zeebo/wave.webp",

@@ -1,0 +1,34 @@
+---
+// Custom scrollbar (the native one is hidden once this runs) with a small
+// Zeebo riding next to the thumb as a page-position marker.
+// Behaviour: src/scripts/scrollbar.ts
+import type { Lang } from "../data/portfolio";
+import { mascot } from "../data/portfolio";
+import { t, ui } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
+// section names shown by the marker (hidden spans, so the language switch translates them)
+const labels: [string, string][] = [
+  ["top", tr("sbTop")],
+  ["work", t(ui.nav.work, lang)],
+  ["all", t(ui.nav.work, lang)],
+  ["about", t(ui.nav.about, lang)],
+  ["toolkit", tr("toolkitTitle").replace(/\*/g, "")],
+  ["contact", t(ui.nav.contact, lang)],
+];
+---
+
+<div id="scrollbar" class="scrollbar" aria-hidden="true">
+  <div class="sb-track"></div>
+  <div class="sb-thumb"></div>
+  <div class="sb-marker">
+    <span class="sb-label"></span>
+    <img src={`${base}/${mascot.marker}`} alt="" width="79" height="120" class="sb-zeebo" draggable="false" />
+  </div>
+  <div hidden>{labels.map(([id, text]) => <span data-sb-label={id}>{text}</span>)}</div>
+</div>

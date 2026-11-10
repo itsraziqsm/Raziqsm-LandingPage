@@ -45,5 +45,31 @@ export const ui = {
   cv: { en: "Download CV", id: "Unduh CV" },
   cta: { en: "let's build something · say hi", id: "ayo kolaborasi · sapa aku" },
   rights: { en: "Built with Astro + GSAP.", id: "Dibuat dengan Astro + GSAP." },
+  // chat (placeholder: answers come from this portfolio, no AI yet)
+  chatOpen: { en: "Ask Zeebo", id: "Tanya Zeebo" },
+  chatClose: { en: "Close chat", id: "Tutup obrolan" },
+  chatStatus: { en: "Preview · answers from this portfolio", id: "Pratinjau · jawaban dari portfolio ini" },
+  chatGreeting: {
+    en: "Hi, I'm Zeebo! Ask me about the work here, or pick a question below.",
+    id: "Hai, aku Zeebo! Tanya apa saja soal karya di sini, atau pilih pertanyaan di bawah.",
+  },
+  chatPlaceholder: { en: "Type a question…", id: "Ketik pertanyaan…" },
+  chatSend: { en: "Send", id: "Kirim" },
+  chatTyping: { en: "Zeebo is typing", id: "Zeebo sedang mengetik" },
+  chatLearning: {
+    en: "I'm still learning to answer free questions. For now, pick one of the questions above, or write to",
+    id: "Aku masih belajar menjawab pertanyaan bebas. Untuk sekarang, pilih salah satu pertanyaan di atas, atau kirim email ke",
+  },
+  qServices: { en: "What do you offer?", id: "Layanan apa saja yang ada?" },
+  qProjects: { en: "Which projects are done?", id: "Project apa saja yang sudah dikerjakan?" },
+  qTools: { en: "Which tools do you use?", id: "Tools apa yang dipakai?" },
+  qContact: { en: "How can I get in touch?", id: "Bagaimana cara menghubungi?" },
+  aServicesIntro: { en: "Four fields, one studio:", id: "Empat bidang, satu studio:" },
+  aProjectsMore: { en: "More case studies are coming soon.", id: "Studi kasus lainnya segera hadir." },
+  aToolsIntro: { en: "Day to day:", id: "Sehari-hari:" },
+  aContactIntro: { en: "Easiest is email:", id: "Paling mudah lewat email:" },
+  aContactAlso: { en: "Or find me on", id: "Atau temui aku di" },
+  // scroll position marker
+  sbTop: { en: "Start", id: "Awal" },
   sample: { en: "sample content", id: "konten contoh" },
 } satisfies Record<string, unknown>;

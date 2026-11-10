@@ -5,6 +5,8 @@ import { mascot, profile, projects, stackItems, stackMode, categories, categoryO
 import { t, ui, accent } from "../i18n";
 import ProjectCard from "../components/ProjectCard.astro";
 import Scene from "../components/Scene.astro";
+import ChatBot from "../components/ChatBot.astro";
+import ScrollBar from "../components/ScrollBar.astro";
 import serifUrl from "@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url";
 import serifItalicUrl from "@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url";
 
@@ -553,7 +555,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
         id="sticky-cta"
         href="#contact"
         inert
-        class="fixed right-8 bottom-6 z-40 hidden translate-y-24 items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-bold text-on-ink opacity-0 shadow-xl transition duration-300 md:flex"
+        class="fixed right-28 bottom-7 z-40 hidden translate-y-24 items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-bold text-on-ink opacity-0 shadow-xl transition duration-300 md:flex"
       >
         <svg viewBox="0 0 10 13" class="w-2.5 fill-brand" aria-hidden="true"><path d="M0 0h10v13L5 9.5 0 13z"></path></svg>
         {tr("cta")}
@@ -564,6 +566,9 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
       <span>© {new Date().getFullYear()} {profile.handle}</span>
       <span>{tr("rights")}</span>
     </footer>
+
+    <ScrollBar lang={lang} />
+    <ChatBot lang={lang} />
 
     <div
       id="toast"
