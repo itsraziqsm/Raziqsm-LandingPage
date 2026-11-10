@@ -11,13 +11,15 @@
 
   --color-paper: #f3ece4;
   --color-ink: #141110;
-  --color-muted: #7d746c;
-  --color-brand: #f26b2c;
+  --color-muted: #716961;
+  --color-brand: #f26b2c; /* decoration + button backgrounds */
+  --color-accent: #b9430b; /* brand colour for text (≥ 4.5 : 1 on paper) */
+  --color-on-brand: #1a1210; /* text on bg-brand */
   --color-term: #1a1514;
   --color-surface: #ffffff; /* cards, pills */
   --color-surface-2: #fbf9f7; /* browser bars */
   --color-on-ink: #ffffff; /* text on bg-ink */
-  --color-ok: #1d9467; /* success ticks on light surfaces */
+  --color-ok: #187854; /* success ticks on light surfaces */
 }
 
 :root {
@@ -32,6 +34,7 @@
   --color-paper: #131110;
   --color-ink: #f3ece4;
   --color-muted: #a1978d;
+  --color-accent: #f26b2c;
   --color-term: #0c0a09;
   --color-surface: #1f1b19;
   --color-surface-2: #282321;
@@ -41,6 +44,27 @@
   --grain: rgb(255 255 255 / 0.018);
   color-scheme: dark;
 }
+/* category colours: set --cat / --cat-deep inline (catVars) */
+.cat-text { color: var(--cat-deep, var(--cat)); }
+:root[data-theme="dark"] .cat-text { color: var(--cat); }
+.cat-bg { background: var(--cat-deep, var(--cat)); color: #fff; }
+
+/* visible keyboard focus */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Without JavaScript the work cards are a plain list; the <head> script adds
+   .js before first paint, which turns on the pinned card stack. */
+html:not(.js) #work { height: auto; overflow: visible; }
+html:not(.js) #stage-wrap { flex: none; }
+html:not(.js) #stage { position: static; display: grid; gap: 1.5rem; }
+html:not(.js) .work-card { position: static; }
+html:not(.js) #scroll-hint,
+html:not(.js) #work-progress { display: none; }
+
 /* warm glow behind the contact card */
 .contact-card {
   background-image: radial-gradient(70% 90% at 100% 0%, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 70%);

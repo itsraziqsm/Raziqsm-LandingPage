@@ -78,16 +78,29 @@ function initWork() {
   const catLabel = document.getElementById("cat-label")!;
   const catName = document.getElementById("cat-name")!;
   const catNum = document.getElementById("cat-num")!;
+  const catClip = document.getElementById("cat-clip")!;
   const hint = document.getElementById("scroll-hint")!;
   const total = cards.length;
 
+  // shrink the big category label when it is wider than its line (long names, narrow phones)
+  const fitLabel = () => {
+    catClip.style.fontSize = "";
+    const over = catName.offsetWidth / catClip.clientWidth;
+    if (over > 1) catClip.style.fontSize = `${(parseFloat(getComputedStyle(catClip).fontSize) / over) * 0.98}px`;
+  };
+
   // fit the card stack into the viewport
   const fit = () => {
+    fitLabel();
     const h = Math.max(...cards.map((c) => c.offsetHeight));
-    gsap.set(stage, { scale: Math.min(1, wrap.clientHeight / h), height: h });
+    const scale = Math.min(1, wrap.clientHeight / h);
+    gsap.set(stage, { scale, height: h });
+    // the "scroll" hint sits just below the card: hide it when there is no room
+    hint.style.display = wrap.clientHeight - h * scale < 36 ? "none" : "";
   };
   fit();
   window.addEventListener("resize", fit);
+  document.fonts?.ready.then(fit);
 
   // terminal typing
   let typing: gsap.core.Tween | null = null;
@@ -137,6 +150,8 @@ function initWork() {
         catName.textContent = card.dataset.catLabel ?? "";
         catNum.textContent = pad(Number(card.dataset.catIndex) + 1);
         catLabel.style.setProperty("--cat", card.dataset.catColor ?? "");
+        catLabel.style.setProperty("--cat-deep", card.dataset.catDeep ?? "");
+        fitLabel();
       })
       .fromTo(catName, { yPercent: 110 * dir }, { yPercent: 0, duration: D(0.35), ease: "power3.out" });
   };
@@ -147,6 +162,7 @@ function initWork() {
     active = i;
     counter.textContent = pad(i + 1);
     cards.forEach((card, k) => {
+      card.inert = k !== i; // only the front card is reachable by keyboard / screen readers
       gsap.to(card, { ...pose(k - i), duration: instant ? 0 : D(0.75), ease: "power3.inOut", overwrite: "auto" });
       if (k < i) termState(card, "full");
       else if (k > i) termState(card, "empty");
@@ -190,6 +206,7 @@ function initReveals() {
   const cta = document.getElementById("sticky-cta");
   if (cta) {
     const show = (on: boolean) => {
+      cta.inert = !on;
       cta.classList.toggle("opacity-0", !on);
       cta.classList.toggle("translate-y-24", !on);
     };
@@ -204,12 +221,14 @@ function initReveals() {
 
   if (reduced) return;
 
-  gsap.from(".hero-in", { y: 30, autoAlpha: 0, duration: 0.9, stagger: 0.12, ease: "power3.out" });
+  // opacity (not autoAlpha/visibility) so content that has not been revealed yet
+  // can still be reached with the Tab key
+  gsap.from(".hero-in", { y: 30, opacity: 0, duration: 0.9, stagger: 0.12, ease: "power3.out" });
 
   gsap.utils.toArray<HTMLElement>(".reveal").forEach((el) =>
     gsap.from(el, {
       y: 30,
-      autoAlpha: 0,
+      opacity: 0,
       duration: 0.8,
       ease: "power3.out",
       scrollTrigger: { trigger: el, start: "top 88%" },
@@ -217,7 +236,7 @@ function initReveals() {
   );
   gsap.from(".grid-card", {
     y: 24,
-    autoAlpha: 0,
+    opacity: 0,
     duration: 0.6,
     stagger: 0.05,
     ease: "power3.out",

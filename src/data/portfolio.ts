@@ -66,6 +66,7 @@ export const mascot = {
   name: "Zebo",
   model: "zebo/zebo.glb",
   sticker: "zebo/sticker.webp",
+  stickerSmall: "zebo/sticker-sm.webp", // header logo
   defaultPose: "wave",
   poses: {
     wave: "zebo/wave.webp",
@@ -82,7 +83,10 @@ export type CategoryId = "landing" | "mobile" | "sysinfo" | "media";
 export interface Category {
   id: CategoryId;
   label: L;
+  /** bright colour: decoration, and text in dark mode */
   color: string;
+  /** darker shade with ≥ 4.5 : 1 contrast: text in light mode, backgrounds under white text */
+  deep: string;
   tint: string;
   /** used for the "coming soon" card when the category has no project yet */
   prop: Prop;
@@ -90,10 +94,10 @@ export interface Category {
 }
 
 export const categories: Category[] = [
-  { id: "landing", label: { en: "Landing Page", id: "Landing Page" }, color: "#f26b2c", tint: "#f6d9c8", prop: "monitor", pose: "hello" },
-  { id: "mobile", label: { en: "Mobile App", id: "Aplikasi Mobile" }, color: "#7559f2", tint: "#dcd8f6", prop: "phone", pose: "point" },
-  { id: "sysinfo", label: { en: "Information System", id: "Sistem Informasi" }, color: "#1d9467", tint: "#d3e9dc", prop: "sheet", pose: "wave" },
-  { id: "media", label: { en: "Media", id: "Media" }, color: "#1688c4", tint: "#d4e6f2", prop: "camera", pose: "cheer" },
+  { id: "landing", label: { en: "Landing Page", id: "Landing Page" }, color: "#f26b2c", deep: "#b9430b", tint: "#f6d9c8", prop: "monitor", pose: "hello" },
+  { id: "mobile", label: { en: "Mobile App", id: "Aplikasi Mobile" }, color: "#7559f2", deep: "#694bf1", tint: "#dcd8f6", prop: "phone", pose: "point" },
+  { id: "sysinfo", label: { en: "Information System", id: "Sistem Informasi" }, color: "#1d9467", deep: "#187854", tint: "#d3e9dc", prop: "sheet", pose: "wave" },
+  { id: "media", label: { en: "Media", id: "Media" }, color: "#1688c4", deep: "#1270a2", tint: "#d4e6f2", prop: "camera", pose: "cheer" },
 ];
 
 export const categoryOf = (id: CategoryId) => categories.find((c) => c.id === id)!;
@@ -212,3 +216,6 @@ export const projectTitle = (p: Project, lang: Lang) => (p.soon ? categoryOf(p.c
 /** text for the fake browser bar */
 export const projectBar = (p: Project) =>
   p.url?.replace(/^https?:\/\//, "") ?? (p.soon ? "coming-soon" : p.title.toLowerCase().replace(/\s+/g, "-"));
+
+/** inline style exposing a category's colours as CSS variables (see .cat-text / .cat-bg) */
+export const catVars = (c: Category) => `--cat:${c.color};--cat-deep:${c.deep}`;

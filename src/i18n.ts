@@ -3,7 +3,7 @@ import type { L, Lang } from "./data/portfolio";
 export const t = (l: L, lang: Lang) => l[lang];
 
 /** Renders "*text*" segments as serif-italic accent spans. */
-export const accent = (s: string, cls = "font-serif italic text-brand") =>
+export const accent = (s: string, cls = "font-serif italic text-accent") =>
   s.replace(/\*(.+?)\*/g, `<em class="${cls}">$1</em>`);
 
 export const ui = {
@@ -12,6 +12,8 @@ export const ui = {
     about: { en: "About", id: "Tentang" },
     contact: { en: "Contact", id: "Kontak" },
   },
+  navLabel: { en: "Sections", id: "Bagian halaman" },
+  langLabel: { en: "Language", id: "Bahasa" },
   themeToDark: { en: "Switch to dark mode", id: "Ganti ke mode gelap" },
   themeToLight: { en: "Switch to light mode", id: "Ganti ke mode terang" },
   heroCta: { en: "See my work", id: "Lihat karya" },

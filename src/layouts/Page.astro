@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import type { Lang } from "../data/portfolio";
-import { mascot, profile, workItems, categories, categoryOf, experience, tools, aiSkills, projectHref, projectTitle } from "../data/portfolio";
+import { mascot, profile, workItems, categories, categoryOf, catVars, experience, tools, aiSkills, projectHref, projectTitle } from "../data/portfolio";
 import { t, ui, accent } from "../i18n";
 import ProjectCard from "../components/ProjectCard.astro";
 import Scene from "../components/Scene.astro";
@@ -18,6 +18,8 @@ const first = categoryOf(workItems[0].category);
 const toolGroups = tools.filter((g) => g.items.length);
 const num = (n: number) => String(n).padStart(2, "0");
 const title = `${profile.name} · ${t(profile.role, lang)}`;
+const canonical = new URL(home[lang], Astro.site).href;
+const ogImage = new URL(`${base}/og.jpg`, Astro.site).href;
 const desc = t(profile.intro, lang);
 const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
 ---
@@ -40,8 +42,22 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
         document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t === "dark" ? "#131110" : "#f3ece4");
       })();
     </script>
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={profile.handle} />
+    <meta property="og:locale" content={lang === "id" ? "id_ID" : "en_US"} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={desc} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${mascot.name} · ${profile.handle}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="icon" type="image/png" href={`${base}/favicon.png`} />
     <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
     <link rel="alternate" hreflang="en" href={new URL(home.en, Astro.site)} />
@@ -50,27 +66,27 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
   <body class="min-h-svh">
     <!-- ───────── header ───────── -->
     <header class="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 bg-linear-to-b from-paper via-paper/85 to-transparent px-4 pt-4 pb-6 sm:px-8 sm:pt-5 sm:pb-8">
-      <a href={home[lang]} class="flex items-center gap-2 text-[13px] sm:text-sm">
-        <img src={`${base}/${mascot.sticker}`} alt={mascot.name} class="zebo h-8 w-auto -rotate-6 sm:h-9" />
+      <a href={home[lang]} class="relative flex items-center gap-2 text-[13px] after:absolute after:-inset-y-1.5 after:inset-x-0 sm:text-sm">
+        <img src={`${base}/${mascot.stickerSmall}`} alt={mascot.name} width="105" height="96" class="zebo h-8 w-auto -rotate-6 sm:h-9" />
         <span class="font-bold tracking-tight">{profile.handle}</span>
         <span class="hidden text-muted sm:inline">· {t(profile.role, lang).toLowerCase()}</span>
       </a>
 
-      <nav class="ml-auto hidden items-center gap-1 rounded-full bg-surface/70 p-1 text-sm shadow-sm backdrop-blur md:flex">
+      <nav aria-label={tr("navLabel")} class="ml-auto hidden items-center gap-1 rounded-full bg-surface/70 p-1 text-sm shadow-sm backdrop-blur md:flex">
         <a href="#work" class="rounded-full px-3 py-1 hover:bg-ink/5">{t(ui.nav.work, lang)}</a>
         <a href="#about" class="rounded-full px-3 py-1 hover:bg-ink/5">{t(ui.nav.about, lang)}</a>
         <a href="#contact" class="rounded-full px-3 py-1 hover:bg-ink/5">{t(ui.nav.contact, lang)}</a>
       </nav>
 
       <div class="flex items-center gap-2">
-        <div class="flex rounded-full bg-surface/80 p-0.5 font-mono text-[11px] font-bold shadow-sm backdrop-blur sm:text-xs" aria-label="Language">
+        <div class="flex rounded-full bg-surface/80 p-0.5 font-mono text-[11px] font-bold shadow-sm backdrop-blur sm:text-xs" role="group" aria-label={tr("langLabel")}>
           {
             (["en", "id"] as const).map((l) => (
               <a
                 href={home[l]}
                 hreflang={l}
                 data-lang-link
-                class:list={["rounded-full px-2 py-1 uppercase", l === lang ? "bg-ink text-on-ink" : "text-muted hover:text-ink"]}
+                class:list={["relative rounded-full px-3 py-1.5 uppercase after:absolute after:-inset-y-2 after:inset-x-0", l === lang ? "bg-ink text-on-ink" : "text-muted hover:text-ink"]}
                 aria-current={l === lang ? "true" : undefined}
               >
                 {l}
@@ -85,7 +101,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
         <button
           id="theme-toggle"
           type="button"
-          class="theme-toggle grid size-8 shrink-0 place-items-center rounded-full bg-surface/80 text-ink shadow-sm backdrop-blur transition hover:text-brand sm:size-9"
+          class="theme-toggle relative grid size-9 shrink-0 after:absolute after:-inset-1 place-items-center rounded-full bg-surface/80 text-ink shadow-sm backdrop-blur transition hover:text-accent sm:size-9"
           data-label-dark={t(ui.themeToDark, lang)}
           data-label-light={t(ui.themeToLight, lang)}
           aria-label={t(ui.themeToDark, lang)}
@@ -122,7 +138,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
           </span>
           <h1
             class="mt-6 font-serif text-[clamp(2.9rem,8vw,5.6rem)] leading-[0.95] tracking-[-0.02em]"
-            set:html={accent(t(profile.headline, lang), "italic text-brand")}
+            set:html={accent(t(profile.headline, lang), "italic text-accent")}
           />
           <p class="mt-6 max-w-[52ch] text-base leading-relaxed text-ink/75 sm:text-lg">{t(profile.intro, lang)}</p>
           <div class="mt-8 flex flex-wrap gap-3">
@@ -184,12 +200,17 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
       <!-- ───────── work (pinned card stack) ───────── -->
       <section id="work" class="relative flex h-svh flex-col overflow-hidden px-4 pt-[72px] pb-12 sm:px-8 sm:pt-[84px]">
         <div class="mx-auto w-full max-w-[600px]">
-          <p class="font-mono text-[11px] font-bold tracking-[0.15em] text-muted uppercase">{tr("workTitle")}</p>
-          <div class="flex items-baseline gap-3" style={`--cat:${first.color}`} id="cat-label">
-            <span class="font-mono text-xs text-[var(--cat)] sm:text-sm"><span id="cat-num">01</span> / {num(categories.length)}</span>
-            <span class="relative inline-block h-[1.15em] overflow-hidden whitespace-nowrap font-serif text-[clamp(2.6rem,9vw,4.5rem)] leading-[1.1] italic text-[var(--cat)]">
-              <span id="cat-name" class="inline-block">{t(first.label, lang)}</span>
-            </span>
+          <div id="cat-label" style={catVars(first)}>
+            <h2 class="flex items-baseline gap-2 font-mono text-[11px] font-bold tracking-[0.15em] text-muted uppercase">
+              {tr("workTitle")}
+              <span class="cat-text"><span id="cat-num">01</span> / {num(categories.length)}</span>
+            </h2>
+            <p
+              id="cat-clip"
+              class="cat-text h-[1.15em] overflow-hidden whitespace-nowrap font-serif text-[clamp(2.4rem,9vw,4.5rem)] leading-[1.1] italic"
+            >
+              <span id="cat-name" class="inline-block origin-left">{t(first.label, lang)}</span>
+            </p>
           </div>
         </div>
 
@@ -203,7 +224,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
           {tr("scroll")} ↓
         </p>
 
-        <div class="absolute inset-x-4 bottom-5 z-30 flex gap-1.5 sm:inset-x-8" aria-hidden="true">
+        <div id="work-progress" class="absolute inset-x-4 bottom-5 z-30 flex gap-1.5 sm:inset-x-8" aria-hidden="true">
           {
             workItems.map((p) => (
               <span class="h-[3px] flex-1 overflow-hidden rounded-full bg-ink/10">
@@ -218,7 +239,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
       <section id="all" class="relative mx-auto max-w-[1100px] px-4 pt-24 pb-10 sm:px-8 sm:pt-32">
         <h2
           class="reveal font-serif text-[clamp(3rem,10vw,6rem)] leading-[0.95] tracking-[-0.02em]"
-          set:html={accent(tr("gridTitle").replace("{n}", String(categories.length)), "italic text-brand")}
+          set:html={accent(tr("gridTitle").replace("{n}", String(categories.length)), "italic text-accent")}
         />
         <ul class="mt-8 grid grid-cols-2 gap-2.5 sm:mt-12 sm:gap-3 lg:grid-cols-3">
           {
@@ -236,7 +257,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
                       <Scene prop={p.prop} tint={c.tint} color={c.color} compact seed={i} image={p.image} pose={p.pose} />
                     </span>
                     <span class="min-w-0 px-1 pb-1 sm:p-0">
-                      <span class="block font-mono text-[10px] font-bold tracking-[0.15em] uppercase" style={`color:${c.color}`}>
+                      <span class="cat-text block font-mono text-[10px] font-bold tracking-[0.15em] uppercase" style={catVars(c)}>
                         {[t(c.label, lang), p.year].filter(Boolean).join(" · ")}
                       </span>
                       <span class="block text-base leading-tight font-extrabold tracking-[-0.03em] break-words sm:text-lg">
@@ -262,13 +283,13 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
                 <p class="text-2xl font-extrabold tracking-[-0.03em]">{profile.name}</p>
                 <p class="font-mono text-[11px] text-muted">{t(profile.role, lang)} · {t(profile.location, lang)}</p>
               </div>
-              <span class="rounded-full bg-brand px-2.5 py-1 font-mono text-[10px] font-bold text-white">@{profile.handle}</span>
+              <span class="rounded-full bg-brand px-2.5 py-1 font-mono text-[10px] font-bold text-on-brand">@{profile.handle}</span>
             </div>
           </div>
         </div>
 
         <div>
-          <h2 class="reveal font-serif text-[clamp(2.8rem,8vw,4.5rem)] leading-none" set:html={accent(tr("aboutTitle"), "italic text-brand")} />
+          <h2 class="reveal font-serif text-[clamp(2.8rem,8vw,4.5rem)] leading-none" set:html={accent(tr("aboutTitle"), "italic text-accent")} />
           <p class="reveal mt-6 max-w-[60ch] text-lg leading-relaxed text-ink/80">{t(profile.intro, lang)}</p>
 
           <h3 class="reveal mt-12 font-mono text-[11px] font-bold tracking-[0.15em] text-muted uppercase">{tr("experience")}</h3>
@@ -292,12 +313,12 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
 
       <!-- ───────── toolkit ───────── -->
       <section id="toolkit" class="mx-auto max-w-[1100px] px-4 py-16 sm:px-8">
-        <h2 class="reveal font-serif text-[clamp(2.8rem,8vw,4.5rem)] leading-none" set:html={accent(tr("toolkitTitle"), "italic text-brand")} />
+        <h2 class="reveal font-serif text-[clamp(2.8rem,8vw,4.5rem)] leading-none" set:html={accent(tr("toolkitTitle"), "italic text-accent")} />
         <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {
             toolGroups.map((g, i) => (
               <div class="reveal">
-                <p class="font-mono text-[11px] font-bold tracking-[0.15em] uppercase" style={`color:${categories[i % categories.length].color}`}>
+                <p class="cat-text font-mono text-[11px] font-bold tracking-[0.15em] uppercase" style={catVars(categories[i % categories.length])}>
                   {t(g.group, lang)}
                 </p>
                 <ul class="mt-3 flex flex-wrap gap-1.5">
@@ -321,7 +342,7 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
               aiSkills.map((s) => (
                 <li class="truncate">
                   <span class="text-ok">✓</span>{" "}
-                  <a href={`https://github.com/${s.repo}`} target="_blank" rel="noopener" class="hover:text-brand">
+                  <a href={`https://github.com/${s.repo}`} target="_blank" rel="noopener" class="hover:text-accent">
                     {s.name}
                   </a>{" "}
                   <span class="text-muted">· {t(s.category, lang)}</span>
@@ -339,11 +360,11 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
           <span class="orb bob-slow aspect-square right-[10%] bottom-[6%] w-6 sm:right-[22%] sm:bottom-[14%] sm:w-12" style="--orb:#7559f2"></span>
           <h2
             class="relative max-w-[14ch] font-serif text-[clamp(2.8rem,9vw,5.5rem)] leading-[0.95]"
-            set:html={accent(tr("contactTitle"), "italic text-brand")}
+            set:html={accent(tr("contactTitle"), "italic text-accent")}
           />
           <p class="relative mt-6 max-w-[48ch] text-ink/70 sm:text-lg">{tr("contactText")}</p>
           <div class="relative mt-10 flex flex-wrap items-center gap-3">
-            <a href={`mailto:${profile.email}`} class="rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-white transition hover:brightness-110 sm:text-base">
+            <a href={`mailto:${profile.email}`} class="rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-on-brand transition hover:brightness-110 sm:text-base">
               {profile.email}
             </a>
             <button
@@ -380,7 +401,8 @@ const tr = (k: keyof typeof ui) => t(ui[k] as { en: string; id: string }, lang);
       <a
         id="sticky-cta"
         href="#contact"
-        class="fixed inset-x-4 bottom-5 z-40 mx-auto flex max-w-[560px] translate-y-24 items-center justify-center gap-2 rounded-full bg-ink px-6 py-4 text-sm font-bold text-on-ink opacity-0 shadow-xl transition duration-300 sm:text-base"
+        inert
+        class="fixed inset-x-4 bottom-4 z-40 mx-auto flex max-w-[560px] translate-y-24 items-center justify-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-bold text-on-ink opacity-0 shadow-xl transition duration-300 sm:right-8 sm:bottom-6 sm:left-auto sm:mx-0"
       >
         <svg viewBox="0 0 10 13" class="w-2.5 fill-brand" aria-hidden="true"><path d="M0 0h10v13L5 9.5 0 13z"></path></svg>
         {tr("cta")}

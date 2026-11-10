@@ -5,25 +5,25 @@ Centang `[x]` saat selesai. Urutan tahap = urutan pengerjaan yang disarankan.
 
 ## Tahap 1: Perbaikan cepat
 
-Bug tampilan dan aksesibilitas. Tidak butuh bahan baru.
+Bug tampilan dan aksesibilitas. Tidak butuh bahan baru. **Selesai 10 Nov 2026.**
 
-- [ ] **Label kategori terpotong di HP.** "Information System" terpotong di 360px dan `01 / 04` pecah dua baris. Perkecil font / izinkan dua baris / pendekkan label di layar sempit.
-- [ ] **Tulisan "scroll ↓" menimpa kartu** di layar pendek (1366×650, 360×640). Pindahkan atau sembunyikan saat ruang tidak cukup.
-- [ ] **Navigasi keyboard melompati isi halaman.** Elemen `.reveal` disembunyikan (`visibility: hidden`) sampai di-scroll, jadi email, tombol salin, dan link sosial tidak terjangkau Tab. Ganti animasi masuk supaya hanya memakai opacity/transform.
-- [ ] **Tombol melayang bisa difokus saat tersembunyi.** Beri `inert` / `tabindex="-1"` selama tidak tampil.
-- [ ] **Tombol melayang menutupi konten** (judul "About me", kartu grid di mobile). Lihat juga Tahap 2.
-- [ ] **Tanpa JavaScript, kartu karya bertumpuk.** Buat kartu tersusun normal secara bawaan; mode tumpukan diaktifkan oleh JS.
-- [ ] **Ukuran tombol header** minimal 44×44px (EN/ID sekarang 29×25, tema 32×32).
-- [ ] **Kontras mode terang** (standar 4,5 : 1 teks kecil, 3 : 1 teks besar):
-  - [ ] teks abu di latar krem 3,9 : 1 → gelapkan `--color-muted`
-  - [ ] teks putih di tombol oranye 3,0 : 1 → oranye lebih tua untuk tombol, atau teks gelap
-  - [ ] kata oranye miring di judul 2,6 : 1 → oranye lebih tua khusus teks
-  - [ ] label kategori hijau/biru/ungu 10px 3,3–4,0 : 1 → varian warna teks yang lebih tua
-  - [ ] judul kartu "Coming soon" 2,2 : 1
-- [ ] **Cincin fokus yang jelas** (`:focus-visible` oranye, 2px) untuk semua link dan tombol.
-- [ ] **Gambar pratinjau link** (`og:image` 1200×630 dengan Zebo + nama), `twitter:card`, dan `<link rel="canonical">`.
-- [ ] **Logo header**: buat versi kecil (±72px, ±5 KB) dari `sticker.webp` (sekarang 84 KB untuk tampil 36px).
-- [ ] **Struktur judul**: jadikan "Selected work" `<h2>`; beri `aria-label` pada `<nav>`.
+- [x] **Label kategori terpotong di HP.** "Information System" terpotong di 360px dan `01 / 04` pecah dua baris. Perkecil font / izinkan dua baris / pendekkan label di layar sempit.
+- [x] **Tulisan "scroll ↓" menimpa kartu** di layar pendek (1366×650, 360×640). Pindahkan atau sembunyikan saat ruang tidak cukup.
+- [x] **Navigasi keyboard melompati isi halaman.** Elemen `.reveal` disembunyikan (`visibility: hidden`) sampai di-scroll, jadi email, tombol salin, dan link sosial tidak terjangkau Tab. Ganti animasi masuk supaya hanya memakai opacity/transform.
+- [x] **Tombol melayang bisa difokus saat tersembunyi.** Beri `inert` / `tabindex="-1"` selama tidak tampil.
+- [x] **Tombol melayang menutupi konten**: di desktop jadi pill ringkas di kanan bawah, di mobile lebih tipis. Penyelesaian penuh (kapan muncul, gabung menu mobile) ada di Tahap 2.
+- [x] **Tanpa JavaScript, kartu karya bertumpuk.** Buat kartu tersusun normal secara bawaan; mode tumpukan diaktifkan oleh JS.
+- [x] **Ukuran tombol header** minimal 44×44px (EN/ID sekarang 29×25, tema 32×32).
+- [x] **Kontras mode terang** (standar 4,5 : 1 teks kecil, 3 : 1 teks besar):
+  - [x] teks abu di latar krem 3,9 : 1 → gelapkan `--color-muted`
+  - [x] teks putih di tombol oranye 3,0 : 1 → oranye lebih tua untuk tombol, atau teks gelap
+  - [x] kata oranye miring di judul 2,6 : 1 → oranye lebih tua khusus teks
+  - [x] label kategori hijau/biru/ungu 10px 3,3–4,0 : 1 → varian warna teks yang lebih tua
+  - [x] judul kartu "Coming soon" 2,2 : 1
+- [x] **Cincin fokus yang jelas** (`:focus-visible` oranye, 2px) untuk semua link dan tombol.
+- [x] **Gambar pratinjau link** (`og:image` 1200×630 dengan Zebo + nama), `twitter:card`, dan `<link rel="canonical">`.
+- [x] **Logo header**: buat versi kecil (±72px, ±5 KB) dari `sticker.webp` (sekarang 84 KB untuk tampil 36px).
+- [x] **Struktur judul**: jadikan "Selected work" `<h2>`; beri `aria-label` pada `<nav>`.
 
 ## Tahap 2: Navigasi dan alur
 
