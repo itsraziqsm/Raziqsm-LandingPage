@@ -13,6 +13,17 @@ npm run dev
 
 Open http://localhost:4321/Raziqsm-LandingPage/ (English) or http://localhost:4321/Raziqsm-LandingPage/id/ (Indonesian)
 
+## Share online (Cloudflare Tunnel)
+
+Serve the production build, not the dev server:
+
+```bash
+npm run online
+```
+
+This builds the site and serves it on port 4321. Open `https://<your-tunnel-host>/Raziqsm-LandingPage/`.
+Add new tunnel hostnames to `server.allowedHosts` in `astro.config.mjs`.
+
 ## Edit content
 
 - **All content (profile, projects, experience, toolkit, contact):** `src/data/portfolio.ts` — every text field takes `{ en, id }`
