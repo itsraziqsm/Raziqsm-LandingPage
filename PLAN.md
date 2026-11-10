@@ -90,7 +90,9 @@ Belum dikerjakan (manfaat kecil): versi kecil gambar pose Zebo (±28 KB per gamb
 
 ## Rilis
 
-- [ ] Buat branch `main`, aktifkan GitHub Pages (Settings → Pages → Source: GitHub Actions).
+- [x] Buat branch `main` dari `claude/zealous-bell-807lwb` (workflow diperbarui: `withastro/action@v6` dengan Node 24, `deploy-pages@v5`).
+- [ ] Aktifkan GitHub Pages (Settings → Pages → Source: GitHub Actions), lalu jalankan ulang workflow "Deploy to GitHub Pages".
+- [ ] Jadikan `main` sebagai default branch (Settings → General → Default branch).
 - [ ] Cek di perangkat asli (HP Android, iPhone, laptop) terang dan gelap.
 
 ## Catatan hasil audit
