@@ -52,11 +52,13 @@ Kekurangan terbesar untuk portfolio: kartu project belum bisa dibuka.
 
 ## Tahap 4: Polesan visual
 
-- [ ] **Kartu kontak**: isi separuh kanan yang kosong di desktop dengan Zebo (pose menunjuk, atau 3D kedua).
-- [ ] **Grid "4 crafts"**: terasa kosong karena 3 dari 4 kartu "Coming soon". Ubah jadi kartu bidang keahlian (ikon + deskripsi layanan) sampai project bertambah.
-- [ ] **Toolkit**: hanya 3 chip, daftar 12 skill AI mendominasi. Lengkapi tools, atau kecilkan / lipat daftar skill.
-- [ ] **Pose Zebo baru** per konteks (mis. berpikir, membawa laptop) supaya tidak selalu wajah yang sama.
-- [ ] **Terminal di kartu & label `whoami`**: putuskan tetap gelap atau ikut tema terang.
+**Selesai 10 Nov 2026.**
+
+- [x] **Kartu kontak**: Zebo (pose menunjuk, dicerminkan supaya menunjuk ke teks) mengisi sisi kanan di desktop, dan tampil kecil di pojok kanan bawah di HP.
+- [x] **Grid "4 bidang"**: sekarang kartu bidang keahlian (ilustrasi, nomor, nama, satu kalimat layanan, daftar project di bidang itu atau "studi kasus pertama segera hadir"). Kalimat layanan ada di `blurb` tiap kategori di `src/data/portfolio.ts` dan masih draf.
+- [x] **Toolkit**: judul di kiri, tools di kanan; daftar 12 skill AI jadi panel lipat yang tertutup secara bawaan. Mengisi kelompok Motion / 3D / Desain tetap di Tahap 5.
+- [x] **Pose Zebo baru**: `think` (berpikir, dipakai di kartu profil) dan `laptop` (bekerja dengan laptop, dipakai di bidang Sistem Informasi). Total 7 pose.
+- [x] **Terminal di kartu & label `whoami`**: diputuskan tetap gelap di kedua tema, karena memang meniru jendela terminal dan jadi ciri khas desainnya.
 
 ## Tahap 5: Konten
 

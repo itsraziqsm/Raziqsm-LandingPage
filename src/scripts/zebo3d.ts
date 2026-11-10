@@ -16,6 +16,7 @@ export const POSES: Record<string, { offsets: PoseOffsets; yaw: number }> = {
   hello: { yaw: 0.35, offsets: { head: [0.05, 0.25, 0.1] } },
   cheer: { yaw: -0.2, offsets: { arm_L: [0, 0, -1.6], arm_R: [0, 0, 0.25], head: [-0.12, 0, 0] } },
   point: { yaw: 0.5, offsets: { head: [0.12, 0.2, -0.22], ear_L: [0, 0, 0.25], ear_R: [0, 0, 0.35], arm_R: [0, 0, -0.9] } },
+  think: { yaw: 0.3, offsets: { head: [0.08, 0.15, -0.25], arm_R: [0.6, 0, 0.5], ear_L: [0, 0, 0.2], ear_R: [0, 0, 0.3] } },
   peek: { yaw: -0.6, offsets: { head: [0.05, -0.35, 0.25], ear_R: [0, 0, -0.3] } },
 };
 
@@ -211,6 +212,9 @@ export function mountZebo(container: HTMLElement, opts: ZeboOptions) {
 
   return {
     renderer,
+    scene,
+    /** draw one frame now (used when rendering stills) */
+    render: () => renderer.render(scene, camera),
     destroy() {
       running = false;
       ro.disconnect();

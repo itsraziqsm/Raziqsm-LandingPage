@@ -74,6 +74,8 @@ export const mascot = {
     cheer: "zebo/cheer.webp",
     point: "zebo/point.webp",
     peek: "zebo/peek.webp",
+    think: "zebo/think.webp",
+    laptop: "zebo/laptop.webp", // rendered with a laptop prop
   } as Record<string, string>,
 };
 
@@ -88,16 +90,22 @@ export interface Category {
   /** darker shade with ≥ 4.5 : 1 contrast: text in light mode, backgrounds under white text */
   deep: string;
   tint: string;
+  /** one line on what you offer in this field (shown in the fields grid) */
+  blurb: L;
   /** used for the "coming soon" card when the category has no project yet */
   prop: Prop;
   pose: string;
 }
 
 export const categories: Category[] = [
-  { id: "landing", label: { en: "Landing Page", id: "Landing Page" }, color: "#f26b2c", deep: "#b9430b", tint: "#f6d9c8", prop: "monitor", pose: "hello" },
-  { id: "mobile", label: { en: "Mobile App", id: "Aplikasi Mobile" }, color: "#7559f2", deep: "#694bf1", tint: "#dcd8f6", prop: "phone", pose: "point" },
-  { id: "sysinfo", label: { en: "Information System", id: "Sistem Informasi" }, color: "#1d9467", deep: "#187854", tint: "#d3e9dc", prop: "sheet", pose: "wave" },
-  { id: "media", label: { en: "Media", id: "Media" }, color: "#1688c4", deep: "#1270a2", tint: "#d4e6f2", prop: "camera", pose: "cheer" },
+  { id: "landing", label: { en: "Landing Page", id: "Landing Page" }, color: "#f26b2c", deep: "#b9430b", tint: "#f6d9c8", prop: "monitor", pose: "hello",
+    blurb: { en: "Company profiles and campaign pages that load fast and read clearly.", id: "Profil perusahaan dan halaman kampanye yang cepat dan jelas." } },
+  { id: "mobile", label: { en: "Mobile App", id: "Aplikasi Mobile" }, color: "#7559f2", deep: "#694bf1", tint: "#dcd8f6", prop: "phone", pose: "point",
+    blurb: { en: "Android apps for day-to-day operations.", id: "Aplikasi Android untuk kebutuhan operasional harian." } },
+  { id: "sysinfo", label: { en: "Information System", id: "Sistem Informasi" }, color: "#1d9467", deep: "#187854", tint: "#d3e9dc", prop: "sheet", pose: "laptop",
+    blurb: { en: "Internal systems that bring data and reports into one place.", id: "Sistem internal yang menyatukan data dan laporan dalam satu pintu." } },
+  { id: "media", label: { en: "Media", id: "Media" }, color: "#1688c4", deep: "#1270a2", tint: "#d4e6f2", prop: "camera", pose: "cheer",
+    blurb: { en: "Podcast and video production, from recording to the final cut.", id: "Produksi podcast dan video, dari rekaman sampai hasil akhir." } },
 ];
 
 export const categoryOf = (id: CategoryId) => categories.find((c) => c.id === id)!;

@@ -28,10 +28,11 @@ export const ui = {
     en: "{n} crafts.<br/>One *studio.*",
     id: "{n} bidang.<br/>Satu *studio.*",
   },
+  fieldSoon: { en: "first case study coming soon", id: "studi kasus pertama segera hadir" },
   aboutTitle: { en: "About *me*", id: "Tentang *aku*" },
   experience: { en: "Experience", id: "Pengalaman" },
   toolkitTitle: { en: "Tool*kit*", id: "Tool*kit*" },
-  aiToolkit: { en: "AI toolkit · Claude Code skills I use", id: "AI toolkit · skill Claude Code yang aku pakai" },
+  aiToolkit: { en: "AI toolkit · Claude Code skills", id: "AI toolkit · skill Claude Code" },
   contactTitle: { en: "Let's build something *together.*", id: "Ayo bikin sesuatu *bareng.*" },
   contactText: {
     en: "Have a project, a role or just an idea? My inbox is open.",

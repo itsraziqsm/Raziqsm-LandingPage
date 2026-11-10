@@ -201,6 +201,10 @@ body {
 }
 @keyframes blink { 50% { opacity: 0; } }
 
+/* ---------- AI toolkit disclosure ---------- */
+.ai-toolkit summary::-webkit-details-marker { display: none; }
+.ai-toolkit[open] .chev { transform: rotate(180deg); }
+
 /* ---------- theme toggle ---------- */
 .theme-toggle svg { overflow: visible; }
 .theme-toggle .sun,
