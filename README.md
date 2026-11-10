@@ -50,8 +50,10 @@ PUBLIC_PREVIEW_STACK=1 npm run dev
 - `public/zebo/sticker.webp`: flat 2D artwork used for the logo and favicon.
 - New poses are offsets per node (head, ears, arms, tail) in `POSES` inside `zebo3d.ts`.
 
-## Deploy (GitHub Pages)
+## Branches and release
 
-`.github/workflows/deploy.yml` builds and deploys on every push to `main`.
-Enable it once under **Settings → Pages → Source: GitHub Actions**.
-The site will be served at https://itsraziqsm.github.io/Raziqsm-LandingPage/
+- `main` is production: every push to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.yml`).
+- Every other branch is development: pushes are built to catch errors, never deployed (`.github/workflows/build-check.yml`).
+- Release = bring a development branch into `main` (merge a pull request, or fast-forward `main`).
+
+One-time setup: **Settings → Pages → Source: GitHub Actions**. The site is served at https://itsraziqsm.github.io/Raziqsm-LandingPage/

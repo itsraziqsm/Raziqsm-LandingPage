@@ -1,0 +1,29 @@
+name: Build check (development)
+
+# Every branch except main is development. Pushes there (and pull requests
+# into main) are built to catch errors before release, but never deployed.
+# Deploying happens only from main, in deploy.yml.
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
