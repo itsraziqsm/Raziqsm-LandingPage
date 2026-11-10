@@ -148,17 +148,47 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
   };
 
   // ── live state ────────────────────────────────────────────
-  const pointer = new THREE.Vector2();
+  const pointer = new THREE.Vector2(); // pointer relative to Zeebo, for the head to follow
   const look = new THREE.Vector2();
   const earLag = new THREE.Vector2(); // ears trail the head: a slower copy of `look`
-  let hop = 0; // 0 = idle, 0..1 = jumping
   let happy = 0; // eases to 1 while the pointer is over Zeebo
   let happyTarget = 0;
   let nextBlink = 2;
   let blinkStart = -1;
   let running = true;
   let visible = true;
+  let tNow = 0;
   const timer = new THREE.Timer();
+
+  // "waving excitedly": a 2.8 s burst (see wave()). Envelope rises over the
+  // first 12 %, falls over the last 20 %; three little hops land with a squash.
+  const WAVE_S = 2.8;
+  let waveStart = -1;
+  const wave = () => {
+    const u = waveStart >= 0 ? (tNow - waveStart) / WAVE_S : 2;
+    // mid-wave: keep the envelope at full instead of restarting from zero
+    waveStart = u >= 0 && u <= 1 ? tNow - 0.12 * WAVE_S : tNow;
+  };
+
+  // drag to spin (mouse / pen), with inertia
+  let spin = 0;
+  let spinVel = 0;
+  let dragging = false;
+  let dragMoved = 0;
+  let lastX = 0;
+
+  // hit test: is the pointer on Zeebo's body (not just the canvas)?
+  const meshes: THREE.Object3D[] = [];
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let ptrInside = false;
+  const hitAt = (clientX: number, clientY: number) => {
+    if (!meshes.length) return false;
+    const b = renderer.domElement.getBoundingClientRect();
+    ndc.set(((clientX - b.left) / b.width) * 2 - 1, -((clientY - b.top) / b.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    return ray.intersectObjects(meshes, false).length > 0;
+  };
 
   const resize = () => {
     const w = container.clientWidth || 1;
@@ -174,78 +204,99 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
     const on = interactive ? 1 : 0;
     const s = Math.sin;
 
-    // jump: height curve + squash & stretch (0 at rest)
-    const jumpH = hop > 0 ? Math.max(0, s(hop * Math.PI)) : 0;
-    const jumpV = hop > 0 ? Math.cos(hop * Math.PI) : 0; // +1 rising … −1 falling
-    const squash = hop > 0 ? (hop < 0.12 ? -s((hop / 0.12) * Math.PI) * 0.12 : hop > 0.88 ? -s(((hop - 0.88) / 0.12) * Math.PI) * 0.1 : jumpV * 0.06) : 0;
+    // wave envelope (0 when idle)
+    let env = 0;
+    let u = 0;
+    if (on && waveStart >= 0) {
+      u = (t - waveStart) / WAVE_S;
+      if (u > 1) waveStart = -1;
+      else {
+        env = Math.min(1, u / 0.12, (1 - u) / 0.2);
+        env = env * env * (3 - 2 * env); // smoothstep
+      }
+    }
+    const hopPhase = s(u * Math.PI * 6); // three hops per wave
+    const hopH = Math.abs(hopPhase) * 0.11 * env;
+    const land = env * (1 - Math.abs(hopPhase)); // 1 at each touchdown
 
-    // body: breathing bob, jump, squash & stretch
-    lift("hips", on * s(t * 2.2) * 0.012 + jumpH * 0.28);
-    scaleBone("hips", 1 - squash * 0.6, 1 + squash, 1 - squash * 0.6);
+    // body: breathing, hops, squash on landing
+    const breathe = s(t * 2.2) * on;
+    const sq = 1 + 0.015 * breathe - 0.1 * land;
+    lift("hips", breathe * 0.012 + hopH);
+    scaleBone("hips", 1 + (1 - sq) * 0.6, sq, 1 + (1 - sq) * 0.6);
     rot("spine", ...add(g("spine"), on * s(t * 2.2) * 0.015, 0, on * s(t * 1.1) * 0.02));
-    rot("chest", ...add(g("chest"), on * s(t * 2.2 + 0.4) * 0.02, look.x * 0.06, on * s(t * 1.1 + 0.3) * 0.02));
+    rot("chest", ...add(g("chest"), on * s(t * 2.2 + 0.4) * 0.02, look.x * 0.06, on * s(t * 1.1 + 0.3) * 0.02 + env * 0.04));
 
-    // head follows the pointer (neck takes 40 %, head 60 %)
+    // head follows the pointer (neck 40 %, head 60 %); while waving it tilts and bobs happily
+    const follow = 1 - env * 0.5;
     const nod = on * s(t * 1.3) * 0.03;
-    rot("neck", ...add(g("neck"), look.y * 0.08, look.x * 0.12, -look.x * 0.04));
-    rot("head", ...add(g("head"), look.y * 0.14 + nod + jumpV * 0.06, look.x * 0.2, -look.x * 0.07 + on * s(t * 0.9) * 0.04));
+    rot("neck", ...add(g("neck"), look.y * 0.08, look.x * 0.12 * follow, -look.x * 0.04));
+    rot(
+      "head",
+      ...add(g("head"), look.y * 0.14 + nod - land * 0.05, look.x * 0.2 * follow, -look.x * 0.07 + on * s(t * 0.9) * 0.04 + env * (0.12 + s(t * 7) * 0.1)),
+    );
 
-    // ears: three segments each, a travelling wave + lag behind the head + drag while jumping
+    // ears: three segments each, a travelling wave + lag behind the head; flap while waving
     // (kept small and clamped: outer and inner ear are separate meshes with
     // different weights, so a big bend on the outer segments splits them)
     const swingX = clamp((look.x - earLag.x) * 0.7, -0.25, 0.25);
     const swingY = clamp((look.y - earLag.y) * 0.4, -0.15, 0.15);
     const perk = happy * 0.12; // happy: ears stand up a little
+    const flap = env * s(t * 22) * 0.28; // excited flapping
     for (const [side, m] of [["L", 1], ["R", -1]] as const) {
       for (let i = 1; i <= 3; i++) {
         const seg = `ear_${side}_0${i}` as Bone;
         const k = 0.4 + i * 0.2; // the tips move most (the base segment carries most of the skin weight)
-        const wave = on * s(t * 2.3 - i * 0.7 + (m > 0 ? 0 : 1.1)) * 0.07 * k;
-        const flop = jumpV * 0.22 * k; // rising: ears drag down; falling: they lift
+        const idle = on * s(t * 2.3 - i * 0.7 + (m > 0 ? 0 : 1.1)) * 0.07 * k;
+        const excited = i === 1 ? flap + env * 0.1 : flap * 0.35; // the base segment does the flapping
         const [bx, by, bz] = i === 1 ? g(seg) : [0, 0, 0];
         const lim = i === 1 ? 0.6 : 0.22;
         const x = clamp(swingY * k + on * s(t * 1.7 + i) * 0.03 * k, -lim, lim);
-        const z = clamp(m * (wave + flop - perk * k) - swingX * 0.5 * k, -lim, lim);
+        const z = clamp(m * (idle + excited - perk * k) - swingX * 0.5 * k, -lim, lim);
         rot(seg, bx + x, by, bz + z);
       }
     }
 
-    // right arm waves from the elbow, left arm sways
-    const w = t * 5;
-    rot("upperarm_R", ...add(g("upperarm_R"), 0, 0, on * s(w) * 0.12));
-    rot("forearm_R", ...add(g("forearm_R"), 0, 0, on * s(w - 0.6) * 0.42));
-    rot("hand_R", ...add(g("hand_R"), 0, 0, on * s(w - 1.2) * 0.35));
-    rot("upperarm_L", ...add(g("upperarm_L"), 0, 0, on * (s(t * 2.2) * 0.05 - jumpV * 0.25)));
-    rot("forearm_L", ...add(g("forearm_L"), 0, 0, on * s(t * 2.2 - 0.5) * 0.08));
+    // arms: calm sway at rest; the wave raises the right arm and waves it fast
+    // from shoulder + elbow (the elbow lags, so the forearm whips); the left arm lifts a bit
+    const ws = 15; // wave speed, rad/s (about 2.4 waves a second)
+    // (+z raises this arm towards the head: past ~+0.6 in total it disappears behind it)
+    rot("upperarm_R", ...add(g("upperarm_R"), 0, 0, on * s(t * 1.6) * 0.06 + env * 0.35 + env * s(t * ws) * 0.25));
+    rot("forearm_R", ...add(g("forearm_R"), 0, 0, env * s(t * ws - 0.6) * 0.45));
+    rot("hand_R", ...add(g("hand_R"), 0, 0, env * s(t * ws - 1.2) * 0.3));
+    rot("upperarm_L", ...add(g("upperarm_L"), 0, 0, on * s(t * 1.6 + 1) * 0.05 - env * 0.35 - env * s(t * ws * 0.5) * 0.12));
+    rot("forearm_L", ...add(g("forearm_L"), 0, 0, on * s(t * 1.6 + 0.5) * 0.04 - env * 0.15));
     rot("hand_L", ...g("hand_L"));
 
-    // tail wags, faster when happy
-    const tw = t * (4 + happy * 4);
-    rot("tail_01", ...add(g("tail_01"), 0, on * s(tw) * 0.25, 0));
-    rot("tail_02", ...add(g("tail_02"), 0, on * s(tw - 0.8) * 0.4, 0));
+    // tail wags, much faster while waving
+    const tw = t * (4 + happy * 3 + env * 14);
+    const ta = 0.25 + env * 0.2;
+    rot("tail_01", ...add(g("tail_01"), 0, on * s(tw) * ta, 0));
+    rot("tail_02", ...add(g("tail_02"), 0, on * s(tw - 0.8) * ta * 1.6, 0));
 
-    // feet tuck in mid-air
-    rot("foot_L", ...add(g("foot_L"), -jumpH * 0.35, 0, 0));
-    rot("foot_R", ...add(g("foot_R"), -jumpH * 0.35, 0, 0));
+    // feet tuck a little on each hop
+    rot("foot_L", ...add(g("foot_L"), -hopH * 2.2, 0, 0));
+    rot("foot_R", ...add(g("foot_R"), -hopH * 2.2, 0, 0));
 
-    // face: blink, brows, mouth, blush
-    let blink = 0;
+    // face: blink (+ happy squint while waving), brows up, chattering mouth, blush
+    let lid = 1;
     if (on && blinkStart >= 0) {
       const p = (t - blinkStart) / 0.16;
-      blink = p >= 0 && p <= 1 ? s(p * Math.PI) : 0;
+      if (p >= 0 && p <= 1) lid = 1 - s(p * Math.PI) * 0.75;
     }
-    scaleBone("eye_L", 1, 1 - blink * 0.75, 1);
-    scaleBone("eye_R", 1, 1 - blink * 0.75, 1);
-    const browUp = (happy * 0.025 + jumpH * 0.03) * on;
+    const squint = lid * (1 - env * 0.25);
+    scaleBone("eye_L", 1, squint, 1);
+    scaleBone("eye_R", 1, squint, 1);
+    const browUp = (env * 0.045 + happy * 0.015) * on;
     lift("brow_L", browUp);
     lift("brow_R", browUp);
-    const open = 1 + (happy * 0.15 + jumpH * 0.25) * on;
-    scaleBone("mouth", 1 + (open - 1) * 0.4, open, 1);
-    const blush = 1 + happy * 0.18 * on;
+    const mouth = 1 + (env * (0.3 + s(t * 9) * 0.06) + happy * 0.08) * on;
+    scaleBone("mouth", 1 + env * 0.06, mouth, 1);
+    const blush = 1 + (happy * 0.12 + env * 0.15) * on;
     scaleBone("cheek_L", blush, blush, blush);
     scaleBone("cheek_R", blush, blush, blush);
 
-    if (model) model.rotation.y = yaw + look.x * 0.15 + (hop > 0 ? easeInOut(hop) * Math.PI * 2 : 0);
+    if (model) model.rotation.y = yaw + spin + look.x * 0.15 * follow;
   };
 
   const frame = () => {
@@ -254,11 +305,18 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
     if (!visible) return;
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.05);
-    const t = timer.getElapsed();
+    const t = (tNow = timer.getElapsed());
     look.lerp(pointer, 1 - Math.pow(0.002, dt));
     earLag.lerp(look, 1 - Math.pow(0.02, dt));
+    // hover = pointer actually on Zeebo's body
+    const hit = !dragging && ptrInside && hitAt(lastPtr.x, lastPtr.y);
+    happyTarget = hit ? 1 : 0;
+    renderer.domElement.style.cursor = dragging ? "grabbing" : hit ? "pointer" : "grab";
     happy += (happyTarget - happy) * (1 - Math.pow(0.01, dt));
-    if (hop > 0) hop = hop >= 1 ? 0 : Math.min(1, hop + dt * 1.25);
+    if (!dragging) {
+      spin += spinVel;
+      spinVel *= Math.pow(0.93, dt * 60);
+    }
     if (t > nextBlink) {
       blinkStart = t;
       nextBlink = t + 2.5 + Math.random() * 3 + (Math.random() < 0.2 ? -2.2 : 0); // sometimes a double blink
@@ -274,6 +332,7 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
       if ((o as THREE.Mesh).isMesh) {
         o.castShadow = true;
         o.frustumCulled = false; // skinned: the bind-pose bounds do not follow the bones
+        meshes.push(o);
       }
     });
     // rest pose + each bone's parent frame, measured before anything moves
@@ -311,22 +370,48 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
   });
   ro.observe(container);
 
+  // ── input ─────────────────────────────────────────────────
+  const lastPtr = { x: 0, y: 0 };
+  const cv = renderer.domElement;
   const onMove = (e: PointerEvent) => {
+    lastPtr.x = e.clientX;
+    lastPtr.y = e.clientY;
     const r = container.getBoundingClientRect();
+    ptrInside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     pointer.set(
       THREE.MathUtils.clamp(((e.clientX - (r.left + r.width / 2)) / window.innerWidth) * 2, -1, 1),
       THREE.MathUtils.clamp(((e.clientY - (r.top + r.height / 2)) / window.innerHeight) * 2, -1, 1),
     );
+    if (dragging) {
+      const dx = e.clientX - lastX;
+      lastX = e.clientX;
+      dragMoved += Math.abs(dx);
+      spin += dx * 0.01;
+      spinVel = dx * 0.01;
+    }
   };
-  const onTap = () => {
-    if (hop === 0) hop = 0.001;
+  const onDown = (e: PointerEvent) => {
+    lastPtr.x = e.clientX;
+    lastPtr.y = e.clientY;
+    dragMoved = 0;
+    lastX = e.clientX;
+    // drag to spin with a mouse / pen only: on touch screens a drag scrolls the page
+    if (e.pointerType !== "touch") {
+      dragging = true;
+      cv.setPointerCapture(e.pointerId);
+    }
   };
-  const onEnter = () => (happyTarget = 1);
-  const onLeave = () => (happyTarget = 0);
+  const onUp = (e: PointerEvent) => {
+    // a click / tap on Zeebo's body (not a drag) = wave
+    if (dragMoved < 6 && hitAt(e.clientX, e.clientY)) wave();
+    dragging = false;
+  };
+  const onLeave = () => (ptrInside = false);
   if (interactive) {
     window.addEventListener("pointermove", onMove, { passive: true });
-    container.addEventListener("click", onTap);
-    container.addEventListener("pointerenter", onEnter);
+    cv.addEventListener("pointerdown", onDown);
+    cv.addEventListener("pointerup", onUp);
+    cv.addEventListener("pointercancel", onUp);
     container.addEventListener("pointerleave", onLeave);
   }
 
@@ -336,6 +421,8 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
   return {
     renderer,
     scene,
+    /** play the "waving excitedly" animation (2.8 s); calling it mid-wave extends it */
+    wave,
     /** draw one frame now (used when rendering stills) */
     render: () => renderer.render(scene, camera),
     destroy() {
@@ -343,8 +430,9 @@ export function mountZeebo(container: HTMLElement, opts: ZeeboOptions) {
       ro.disconnect();
       io.disconnect();
       window.removeEventListener("pointermove", onMove);
-      container.removeEventListener("click", onTap);
-      container.removeEventListener("pointerenter", onEnter);
+      cv.removeEventListener("pointerdown", onDown);
+      cv.removeEventListener("pointerup", onUp);
+      cv.removeEventListener("pointercancel", onUp);
       container.removeEventListener("pointerleave", onLeave);
       timer.dispose();
       renderer.dispose();
@@ -358,7 +446,4 @@ function add(a: [number, number, number], x: number, y: number, z: number): [num
 }
 function clamp(v: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, v));
-}
-function easeInOut(x: number) {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }

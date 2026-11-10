@@ -533,13 +533,15 @@ function initZeebo() {
     }
     try {
       const { mountZeebo } = await import("./zeebo3d");
-      mountZeebo(el, {
+      const zeebo = mountZeebo(el, {
         src: el.dataset.src!,
         pose: "wave",
         yaw: -0.15,
         onReady: () => {
           el.querySelector<HTMLElement>(".zeebo-still")?.classList.add("opacity-0");
           btn?.remove();
+          // say hi: wave excitedly once Zeebo appears (then again on every click / tap)
+          window.setTimeout(() => zeebo.wave(), 700);
         },
       });
     } catch {
