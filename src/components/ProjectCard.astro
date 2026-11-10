@@ -1,6 +1,6 @@
 ---
 import type { Lang, Project } from "../data/portfolio";
-import { catVars, categoryOf, projectHref, projectTitle, projectBar, workItems } from "../data/portfolio";
+import { catVars, categoryOf, projectHref, projectTitle, projectBar, stackItems } from "../data/portfolio";
 import { t, ui } from "../i18n";
 import Scene from "./Scene.astro";
 
@@ -9,12 +9,14 @@ interface Props {
   index: number;
   total: number;
   lang: Lang;
+  /** list mode: card sits in normal flow (see #work.is-list) */
+  list?: boolean;
 }
 
-const { project: p, index, total, lang } = Astro.props;
+const { project: p, index, total, lang, list = false } = Astro.props;
 const cat = categoryOf(p.category);
 // category number follows the order categories first appear in the card stack
-const catIndex = [...new Set(workItems.map((w) => w.category))].indexOf(cat.id);
+const catIndex = [...new Set(stackItems.map((w) => w.category))].indexOf(cat.id);
 const num = (n: number) => String(n).padStart(2, "0");
 const href = projectHref(p);
 const title = projectTitle(p, lang);
@@ -24,7 +26,7 @@ const linkAttrs = href ? { href, target: "_blank", rel: "noopener" } : {};
 ---
 
 <article
-  class="work-card absolute inset-x-0 top-0 mx-auto w-[min(600px,calc(100vw-32px))] overflow-hidden rounded-2xl bg-surface shadow-[0_30px_60px_-25px_rgb(60_30_10/0.35),0_2px_6px_rgb(0_0_0/0.06)] will-change-transform"
+  class:list={[list ? "relative" : "absolute inset-x-0 top-0", "work-card mx-auto w-[min(600px,calc(100vw-32px))] overflow-hidden rounded-2xl bg-surface shadow-[0_30px_60px_-25px_rgb(60_30_10/0.35),0_2px_6px_rgb(0_0_0/0.06)] will-change-transform"]}
   data-cat-label={t(cat.label, lang)}
   data-cat-color={cat.color}
   data-cat-deep={cat.deep}
@@ -47,12 +49,12 @@ const linkAttrs = href ? { href, target: "_blank", rel: "noopener" } : {};
   </div>
 
   <!-- visual -->
-  <div class="relative aspect-[16/8]">
+  <div class="card-visual relative aspect-[16/8]">
     <Scene prop={p.prop} tint={cat.tint} color={cat.color} chip={p.chip} seed={index} image={p.image} pose={p.pose} />
     <span
       class="cat-bg absolute right-3 top-3 rounded-full px-2 py-0.5 font-mono text-[10px] font-bold sm:text-[11px]"
     >
-      {num(index + 1)} / {num(total)}
+      {list ? t(cat.label, lang) : `${num(index + 1)} / ${num(total)}`}
     </span>
   </div>
 

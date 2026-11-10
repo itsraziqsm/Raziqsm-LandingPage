@@ -63,7 +63,53 @@ html:not(.js) #stage-wrap { flex: none; }
 html:not(.js) #stage { position: static; display: grid; gap: 1.5rem; }
 html:not(.js) .work-card { position: static; }
 html:not(.js) #scroll-hint,
-html:not(.js) #work-progress { display: none; }
+html:not(.js) #work-progress,
+html:not(.js) #menu-toggle { display: none; }
+
+/* card stack on short screens: a flatter picture instead of shrinking the whole card */
+@media (max-height: 760px) {
+  #work:not(.is-list) .card-visual { aspect-ratio: 16 / 6; }
+}
+@media (max-height: 620px) {
+  #work:not(.is-list) .card-visual { aspect-ratio: 16 / 5; }
+}
+
+/* ---------- header: contextual counter ---------- */
+#counter-wrap {
+  max-width: 0;
+  margin-left: -0.5rem; /* cancels the flex gap while hidden */
+  padding: 0.375rem 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 0.4s ease, padding 0.4s ease, margin 0.4s ease, opacity 0.3s ease;
+}
+#counter-wrap[data-show="true"] {
+  max-width: 9rem;
+  margin-left: 0;
+  padding: 0.375rem 0.75rem;
+  opacity: 1;
+}
+
+/* ---------- mobile menu ---------- */
+.menu-panel {
+  transform-origin: top right;
+  transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.3, 1.3, 0.5, 1), visibility 0s linear 0.3s;
+}
+.menu-panel[data-open="false"] {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.96);
+}
+.menu-panel[data-open="true"] {
+  transition-delay: 0s;
+}
+.menu-toggle path {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  transition: transform 0.3s ease;
+}
+.menu-toggle[aria-expanded="true"] .bar-1 { transform: translateY(3px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] .bar-2 { transform: translateY(-3px) rotate(-45deg); }
 
 /* warm glow behind the contact card */
 .contact-card {

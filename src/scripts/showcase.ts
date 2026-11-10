@@ -70,39 +70,10 @@ function initLangLinks() {
 function initWork() {
   const section = document.getElementById("work");
   if (!section) return;
-  const stage = document.getElementById("stage")!;
-  const wrap = document.getElementById("stage-wrap")!;
   const cards = gsap.utils.toArray<HTMLElement>(".work-card");
-  const segs = gsap.utils.toArray<HTMLElement>(".seg");
-  const counter = document.getElementById("counter")!;
-  const catLabel = document.getElementById("cat-label")!;
-  const catName = document.getElementById("cat-name")!;
-  const catNum = document.getElementById("cat-num")!;
-  const catClip = document.getElementById("cat-clip")!;
-  const hint = document.getElementById("scroll-hint")!;
-  const total = cards.length;
+  if (!cards.length) return;
 
-  // shrink the big category label when it is wider than its line (long names, narrow phones)
-  const fitLabel = () => {
-    catClip.style.fontSize = "";
-    const over = catName.offsetWidth / catClip.clientWidth;
-    if (over > 1) catClip.style.fontSize = `${(parseFloat(getComputedStyle(catClip).fontSize) / over) * 0.98}px`;
-  };
-
-  // fit the card stack into the viewport
-  const fit = () => {
-    fitLabel();
-    const h = Math.max(...cards.map((c) => c.offsetHeight));
-    const scale = Math.min(1, wrap.clientHeight / h);
-    gsap.set(stage, { scale, height: h });
-    // the "scroll" hint sits just below the card: hide it when there is no room
-    hint.style.display = wrap.clientHeight - h * scale < 36 ? "none" : "";
-  };
-  fit();
-  window.addEventListener("resize", fit);
-  document.fonts?.ready.then(fit);
-
-  // terminal typing
+  // ── terminal typing (both modes) ──────────────────────────
   let typing: gsap.core.Tween | null = null;
   const parts = (card: HTMLElement) => ({
     cmd: card.querySelector<HTMLElement>(".cmd")!,
@@ -136,6 +107,50 @@ function initWork() {
     });
   };
 
+  // ── list mode: few projects, cards in normal flow, no scroll lock ──
+  if (section.classList.contains("is-list")) {
+    cards.forEach((card) => {
+      if (reduced) return;
+      termState(card, "empty");
+      ScrollTrigger.create({ trigger: card, start: "top 75%", once: true, onEnter: () => typeInto(card) });
+      gsap.from(card, { y: 40, opacity: 0, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: card, start: "top 90%" } });
+    });
+    return;
+  }
+
+  // ── stack mode: pinned, one card per scroll step ──────────
+  const stage = document.getElementById("stage")!;
+  const wrap = document.getElementById("stage-wrap")!;
+  const segs = gsap.utils.toArray<HTMLElement>(".seg");
+  const counter = document.getElementById("counter");
+  const counterWrap = document.getElementById("counter-wrap");
+  const catLabel = document.getElementById("cat-label")!;
+  const catName = document.getElementById("cat-name")!;
+  const catNum = document.getElementById("cat-num")!;
+  const catClip = document.getElementById("cat-clip")!;
+  const hint = document.getElementById("scroll-hint")!;
+  const total = cards.length;
+
+  // shrink the big category label when it is wider than its line (long names, narrow phones)
+  const fitLabel = () => {
+    catClip.style.fontSize = "";
+    const over = catName.offsetWidth / catClip.clientWidth;
+    if (over > 1) catClip.style.fontSize = `${(parseFloat(getComputedStyle(catClip).fontSize) / over) * 0.98}px`;
+  };
+
+  // fit the card stack into the viewport
+  const fit = () => {
+    fitLabel();
+    const h = Math.max(...cards.map((c) => c.offsetHeight));
+    const scale = Math.min(1, wrap.clientHeight / h);
+    gsap.set(stage, { scale, height: h });
+    // the "scroll" hint sits just below the card: hide it when there is no room
+    hint.style.display = wrap.clientHeight - h * scale < 36 ? "none" : "";
+  };
+  fit();
+  window.addEventListener("resize", fit);
+  document.fonts?.ready.then(fit);
+
   let active = -1;
   let activeCat = cards[0].dataset.catIndex;
 
@@ -160,7 +175,7 @@ function initWork() {
     if (i === active) return;
     setCategory(i, i > active ? 1 : -1);
     active = i;
-    counter.textContent = pad(i + 1);
+    if (counter) counter.textContent = pad(i + 1);
     cards.forEach((card, k) => {
       card.inert = k !== i; // only the front card is reachable by keyboard / screen readers
       gsap.to(card, { ...pose(k - i), duration: instant ? 0 : D(0.75), ease: "power3.inOut", overwrite: "auto" });
@@ -173,7 +188,6 @@ function initWork() {
   };
 
   go(0, true);
-  if (total < 2) return; // nothing to scroll through
 
   const st = ScrollTrigger.create({
     trigger: section,
@@ -183,6 +197,19 @@ function initWork() {
     onUpdate: (self) => go(Math.round(self.progress * (total - 1))),
     invalidateOnRefresh: true,
   });
+
+  // the "01 / 08" counter in the header only makes sense while the stack is on screen
+  if (counterWrap) {
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top 50%",
+      end: () => st.end + window.innerHeight * 0.5,
+      onToggle: (self) => {
+        counterWrap.dataset.show = String(self.isActive);
+        counterWrap.setAttribute("aria-hidden", String(!self.isActive));
+      },
+    });
+  }
 
   // Snap to the nearest card once scrolling settles. Done by hand (instead of
   // ScrollTrigger's `snap`) so the snap tween goes through Lenis.
@@ -200,6 +227,51 @@ function initWork() {
   // fires 140ms after the last scroll event, i.e. once Lenis has fully settled
   if (lenis) lenis.on("scroll", snap);
   else window.addEventListener("scroll", snap, { passive: true });
+}
+
+/** Mobile menu: a panel under the header with the section links and language. */
+function initMenu() {
+  const btn = document.getElementById("menu-toggle");
+  const panel = document.getElementById("menu-panel");
+  if (!btn || !panel) return;
+  const set = (open: boolean) => {
+    btn.setAttribute("aria-expanded", String(open));
+    panel.dataset.open = String(open);
+    panel.inert = !open;
+  };
+  set(false);
+  btn.addEventListener("click", () => set(btn.getAttribute("aria-expanded") !== "true"));
+  panel.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => set(false)));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && btn.getAttribute("aria-expanded") === "true") {
+      set(false);
+      btn.focus();
+    }
+  });
+  document.addEventListener("pointerdown", (e) => {
+    const t = e.target as Node;
+    if (!panel.contains(t) && !btn.contains(t)) set(false);
+  });
+  // leaving the phone layout closes it
+  matchMedia("(min-width: 768px)").addEventListener("change", () => set(false));
+
+  // highlight the section currently on screen (panel + desktop nav)
+  const links = gsap.utils.toArray<HTMLAnchorElement>("[data-nav]");
+  const mark = (id: string) => links.forEach((l) => l.toggleAttribute("data-active", l.getAttribute("href") === `#${id}`));
+  [...new Set(links.map((l) => l.getAttribute("href")!.slice(1)))].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const next = el.nextElementSibling;
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 50%",
+      // "work" also covers the all-work grid that follows it
+      endTrigger: id === "work" && next?.id === "all" ? next : el,
+      end: "bottom 50%",
+      onToggle: (self) => self.isActive && mark(id),
+    });
+  });
+  ScrollTrigger.create({ trigger: "#top", start: "top top", end: "bottom 50%", onToggle: (self) => self.isActive && mark("") });
 }
 
 function initReveals() {
@@ -303,5 +375,6 @@ export function initPage() {
   initCopy();
   initLangLinks();
   initWork();
+  initMenu();
   initReveals();
 }

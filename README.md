@@ -33,6 +33,16 @@ Add new tunnel hostnames to `server.allowedHosts` in `astro.config.mjs`.
 - **Project card:** `src/components/ProjectCard.astro`
 - **Scroll / card-stack animation:** `src/scripts/showcase.ts`
 
+## Work section modes
+
+- Fewer than 3 real projects (`STACK_MIN` in `src/data/portfolio.ts`): the cards are a plain list, no scroll lock.
+- 3 or more: the pinned, scroll-driven card stack turns on automatically.
+- Preview the stack with placeholder cards:
+
+```bash
+PUBLIC_PREVIEW_STACK=1 npm run dev
+```
+
 ## Zebo (mascot)
 
 - `public/zebo/zebo.glb`: 3D model (meshopt-compressed), shown interactively in the hero. The head follows the cursor, the arm waves, and Zebo hops when clicked. Code: `src/scripts/zebo3d.ts`. three.js is lazy-loaded only for this.

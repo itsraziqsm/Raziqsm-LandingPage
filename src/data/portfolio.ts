@@ -143,10 +143,20 @@ export const projects: Project[] = [
   },
 ];
 
-/** Real projects (in category order) first, then a "coming soon" card per empty category. */
 const byCategory = (p: Project) => categories.findIndex((c) => c.id === p.category);
+const realProjects = [...projects].sort((a, b) => byCategory(a) - byCategory(b));
+
+/** From this many real projects on, the work section becomes the pinned,
+ *  scroll-driven card stack. Below it the cards are a plain list (no scroll lock). */
+export const STACK_MIN = 3;
+/** `PUBLIC_PREVIEW_STACK=1 npm run dev` previews the stack with the placeholder cards. */
+const previewStack = import.meta.env.PUBLIC_PREVIEW_STACK === "1";
+export const stackMode = previewStack || realProjects.length >= STACK_MIN;
+
+/** All-work grid: real projects (in category order) first, then a "coming soon"
+ *  card per empty category. */
 export const workItems: Project[] = [
-  ...[...projects].sort((a, b) => byCategory(a) - byCategory(b)),
+  ...realProjects,
   ...categories
     .filter((c) => !projects.some((p) => p.category === c.id))
     .map((c): Project => (
@@ -165,6 +175,9 @@ export const workItems: Project[] = [
       soon: true,
     })),
 ];
+
+/** Cards of the work section: real projects only (placeholders if there are none yet). */
+export const stackItems: Project[] = previewStack || !realProjects.length ? workItems : realProjects;
 
 // ── experience ───────────────────────────────────────────────
 export const experience: { period: L; role: L; org: string; note: L }[] = [

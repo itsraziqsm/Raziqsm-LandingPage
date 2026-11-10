@@ -27,12 +27,14 @@ Bug tampilan dan aksesibilitas. Tidak butuh bahan baru. **Selesai 10 Nov 2026.**
 
 ## Tahap 2: Navigasi dan alur
 
-- [ ] **Menu mobile.** Work/About/Contact sekarang tersembunyi di HP. Pilihan: bilah navigasi bawah, atau tombol menu yang membuka panel.
-- [ ] **Angka `01 / 04` kontekstual.** Tampilkan hanya di bagian karya, atau ganti jadi indikator progres halaman.
-- [ ] **Tombol melayang "let's build something"**: munculkan hanya saat tidak menutupi konten penting, perkecil di mobile, atau gabungkan ke menu mobile.
-- [ ] **Bagian karya menyesuaikan jumlah project.** Selama project asli < 3: tampilkan kartu asli tanpa kunci scroll, dan pindahkan "Coming soon" ke grid saja. Kunci scroll + tumpukan aktif lagi otomatis saat project ≥ 3.
-- [ ] **Layar pendek**: kartu mengecil jadi 76% di 1366×650. Pakai layout kartu yang lebih ringkas (gambar lebih pendek) alih-alih mengecilkan semuanya.
-- [ ] **Hero mobile**: naikkan Zebo ke atas lipatan layar (di atas/samping judul) atau ringkas teks pembuka.
+**Selesai 10 Nov 2026.**
+
+- [x] **Menu mobile.** Tombol menu di header membuka panel berisi Karya / Tentang / Kontak dan pilihan bahasa. Tutup dengan klik link, klik di luar, atau Escape. Bagian yang sedang dilihat ditandai (juga di menu desktop).
+- [x] **Angka `01 / 04` kontekstual.** Hanya muncul selama tumpukan kartu ada di layar; tidak dirender sama sekali di mode daftar.
+- [x] **Tombol melayang "let's build something"**: hanya di desktop (pill ringkas kanan bawah). Di HP perannya digantikan link Kontak di menu.
+- [x] **Bagian karya menyesuaikan jumlah project.** Di bawah `STACK_MIN` (3) project asli: kartu asli dalam alur normal tanpa kunci scroll, "Coming soon" hanya di grid. Mulai 3 project: tumpukan + kunci scroll aktif otomatis. Pratinjau tumpukan: `PUBLIC_PREVIEW_STACK=1 npm run dev`.
+- [x] **Layar pendek**: di mode tumpukan gambar kartu dibuat lebih pipih (16:6, lalu 16:5) sehingga kartu tidak perlu banyak dikecilkan (1366×650: 76% → 89%).
+- [x] **Hero mobile**: kartu Zebo pindah ke atas judul dengan bingkai lebih lebar dan pendek, sehingga Zebo dan tombol utama terlihat tanpa scroll.
 
 ## Tahap 3: Halaman studi kasus
 

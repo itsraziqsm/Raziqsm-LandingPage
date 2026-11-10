@@ -13,6 +13,7 @@ export const ui = {
     contact: { en: "Contact", id: "Kontak" },
   },
   navLabel: { en: "Sections", id: "Bagian halaman" },
+  menu: { en: "Menu", id: "Menu" },
   langLabel: { en: "Language", id: "Bahasa" },
   themeToDark: { en: "Switch to dark mode", id: "Ganti ke mode gelap" },
   themeToLight: { en: "Switch to light mode", id: "Ganti ke mode terang" },
@@ -20,6 +21,7 @@ export const ui = {
   heroContact: { en: "Get in touch", id: "Hubungi aku" },
   scroll: { en: "scroll", id: "gulir" },
   workTitle: { en: "Selected work", id: "Karya pilihan" },
+  workHeading: { en: "Selected *work*", id: "Karya *pilihan*" },
   terminal: { en: "build log", id: "build log" },
   visit: { en: "Visit", id: "Kunjungi" },
   gridTitle: {
